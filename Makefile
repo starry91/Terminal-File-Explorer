@@ -1,25 +1,25 @@
 PROJECT_ROOT = $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
-OBJS = termzilla.o
-
-ifeq ($(BUILD_MODE),debug)
-	CFLAGS += -g
-else ifeq ($(BUILD_MODE),run)
-	CFLAGS += -O2
-else
-	$(error Build mode $(BUILD_MODE) not supported by this Makefile)
-endif
+OBJS = termzilla.o Terminal.o
+CFLAGS = -I.
+LDIR = -L.
+#ifeq ($(BUILD_MODE),debug)
+#	CFLAGS += -g
+##	CFLAGS += -O2
+#else
+#	$(error Build mode $(BUILD_MODE) not supported by this Makefile)
+#endif
 
 all:	termzilla
 
 termzilla:	$(OBJS)
 	$(CXX) -o $@ $^
 
-%.o:	$(PROJECT_ROOT)%.cpp
-	$(CXX) -c $(CFLAGS) $(CXXFLAGS) $(CPPFLAGS) -o $@ $<
+%.o:	$(PROJECT_ROOT)%.cpp $(PROJECT_ROOT)%.h
+	$(CXX) -c $(CFLAGS) $(CXXFLAGS) $(CPPFLAGS)  $(LDIR) -o $@ $< 
 
-%.o:	$(PROJECT_ROOT)%.c
+%.o:	$(PROJECT_ROOT)%.c $(PROJECT_ROOT)%.h
 	$(CC) -c $(CFLAGS) $(CPPFLAGS) -o $@ $<
 
 clean:
-	rm -fr termzilla $(OBJS)
+	rm termzilla $(OBJS)
