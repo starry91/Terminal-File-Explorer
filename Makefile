@@ -1,6 +1,6 @@
 PROJECT_ROOT = $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
-OBJS = termzilla.o Terminal.o
+OBJS = termzilla.o Terminal.o fileAttr.o
 CFLAGS = -I.
 LDIR = -L.
 #ifeq ($(BUILD_MODE),debug)
