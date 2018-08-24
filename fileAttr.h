@@ -19,7 +19,6 @@ class fileAttr
     fileAttr(std::string perm, std::string usr_name,
              std::string grp_name, long long size,
              std::string last_modified, std::string name);
-    friend std::ostream& operator<< (std::ostream& os, const fileAttr &obj);
 };
 
 #endif

@@ -16,13 +16,3 @@ fileAttr::fileAttr(std::string perm, std::string usr_name,
     else
         this->name = name;
 }
-
-std::ostream &operator<<(std::ostream &os, const fileAttr &obj)
-{
-    os << obj.permission << " ";
-    os << obj.usr_name << " ";
-    os << obj.grp_name << " ";
-    os << std::right << std::setw(6) << obj.size << " ";
-    os << obj.last_modified << " ";
-    os << obj.name << " ";
-}
