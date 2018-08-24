@@ -3,16 +3,17 @@
 
 #include <iostream>
 #include <utility>
+#include <termios.h>
 
-class Terminal{
-    protected:
-        int rows;
-        int cols;
-    public:
-        Terminal();
-        std::pair<int,int> updateTermDim();
-        int getRows();
-        int getCols();
+class Terminal
+{
+  public:
+    int rows;
+    int cols;
+    struct termios term_state;
+    Terminal();
+    std::pair<int, int> updateTermDim();
+
 };
 
 #endif

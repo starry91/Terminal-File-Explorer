@@ -17,12 +17,8 @@ Terminal::Terminal()
     std::pair<int, int> temp = updateTermDim();
     this->rows = temp.first;
     this->cols = temp.second;
-}
-
-int Terminal::getRows() {
-    return this->rows;
-}
-
-int Terminal::getCols() {
-    return this->cols;
+    if (tcgetattr(0, &(this->term_state)))
+    {
+        printf("Error getting current terminal settings");
+    }
 }
