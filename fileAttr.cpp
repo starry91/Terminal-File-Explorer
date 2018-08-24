@@ -10,8 +10,11 @@ fileAttr::fileAttr(std::string perm, std::string usr_name,
     this->grp_name = grp_name;
     this->size = size;
     this->last_modified = last_modified;
-    this->name = name;
     this->file_type = (perm[0] == 'd') ? 'd' : 'f';
+    if (this->file_type == 'd')
+        this->name = "\033[35;10m" + name + "\033[0m";
+    else
+        this->name = name;
 }
 
 std::ostream &operator<<(std::ostream &os, const fileAttr &obj)
