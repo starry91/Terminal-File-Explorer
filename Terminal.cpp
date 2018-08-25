@@ -89,10 +89,10 @@ TerminalState Terminal::getDirListing(const char *path)
                       std::string(strtok(ctime(&fileStat.st_mtime), "\n")),
                       entry->d_name);
         state.files.push_back(file);
-        //state.files.push_back(file);
-        //state.files.push_back(file);
-        //state.files.push_back(file);
-        //state.files.push_back(file);
+        state.files.push_back(file);
+        state.files.push_back(file);
+        state.files.push_back(file);
+        state.files.push_back(file);
     }
     closedir(dp);
     return state;
@@ -103,30 +103,29 @@ void Terminal::Draw()
 {
     std::cout << "\033[?1049h"; //New Screen
     std::cout << "\033[0;0H";   //Move cursor to start
-    std::cout << " Hello " << std::endl;
     if (curr_state_index >= 0)
     {
         TerminalState &state = this->state_history[curr_state_index];
         int highlight_index = state.highlight_index;
-        int end_index = std::min((int)state.files.size() - state.start_index, (int)this->rows + (int)state.start_index);
-        std::cout << state.start_index << " " << end_index << std::endl;
-        //std::this_thread::sleep_for(std::chrono::seconds(5));
+        int end_index = std::min((int)state.files.size(), (int)this->rows + (int)state.start_index - 2);   //-2 as priting dir in the begenning and last row due to cursor
+        std::cout << "Current Directory: " << state.cwd + "/";
         for (int i = state.start_index; i < end_index; i++)
         {
+            std::cout << std::endl;
             fileAttr file = state.files[i];
             std::cout << file.permission << " ";
             std::cout << file.usr_name << " ";
             std::cout << file.grp_name << " ";
             std::cout << std::right << std::setw(6) << file.size << " ";
-            std::cout << file.last_modified << " ";
+            std::cout << file.last_modified;
             if (highlight_index == i)
             {
                 std::cout << "\033[30;46m " << file.name << " "
                           << "\033[0m ";
+                //std::cout << state.start_index << " " << state.highlight_index << " " << state.files.size();
             }
             else
-                std::cout << file.name << " ";
-            std::cout << std::endl;
+                std::cout << " " << file.name << " ";
             //std::this_thread::sleep_for(std::chrono::seconds(1));
         }
     }
@@ -166,7 +165,7 @@ void Terminal::scrollDown()
     TerminalState &state = this->state_history[this->curr_state_index];
     if (state.highlight_index < state.files.size() - 1)
         state.highlight_index += 1;
-    if (state.start_index + this->rows < state.highlight_index)
+    if (state.start_index + this->rows - 3 < state.highlight_index)  //-3 as priting dir in the begenning and last row due to cursor
         state.start_index += 1;
     this->Draw();
 }
