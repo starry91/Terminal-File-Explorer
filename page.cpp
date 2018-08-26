@@ -4,6 +4,7 @@
 #include "file.h"
 #include <unistd.h>
 #include <string>
+#include <memory>
 
 Page::Page(std::string path = NULL)
 {
@@ -19,7 +20,7 @@ Page::Page(std::string path = NULL)
 
     struct dirent *entry;
     while ((entry = readdir(dp)))
-        this->files.push_back(std::make_shared<File>(File(std::string(entry->d_name))));
+        this->files.push_back(std::make_shared<File>(File(path, std::string(entry->d_name))));
     this->highlight_index = 0;
     this->cwd = std::string(path);
 }
@@ -36,18 +37,17 @@ void Page::scrollUp()
         this->highlight_index -= 1;
 }
 
-/*
-void Page::enterDir()
+
+page_Sptr Page::enterDir()
 {
-    fileAttr file = state.files[state.highlight_index];
-    if (file.file_type == 'd')
+    auto file = this->files[this->highlight_index];
+    if (file->file_type == 'd')
     {
-        std::string path = state.cwd + "/" + file.name;
-        std::cout << "path: " << path << std::endl;
-        PageState state = getDirListing((char *)path.c_str());
-        this->state_history.push_back(state);
-        this->prev_state_index = this->curr_state_index;
-        this->curr_state_index = this->curr_state_index + 1;
-        this->Draw();
+        std::string path = this->cwd + "/" + file->name;
+        //std::cout << "path: " << path << std::endl;
+        return std::make_shared<Page>(Page((char *)path.c_str()));
     }
-}*/
+    else {
+        perror("Not a directory");
+    }
+}

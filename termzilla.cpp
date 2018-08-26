@@ -42,27 +42,26 @@ int main()
 				{
 				case (int)Action::KEY_DOWN:
 					page->scrollDown();
-					//std::cout << "\033[1B" << std::flush;
 					break;
 				case (int)Action::KEY_UP:
 					page->scrollUp();
-					//std::cout << "\033[1A" << std::flush;
 					break;
 				case (int)Action::KEY_LEFT:
-					//std::cout << "\033[1D" << std::flush;
 					break;
 				case (int)Action::KEY_RIGHT:
-					//std::cout << "\033[1C" << std::flush;
 					break;
 				}
 			}
+			term.Draw(page);
 		}
 		else if ((int)input == (int)Action::KEY_ENTER)
 		{
-			//term.enterDir();
+			auto page = pageMgr.getCurrPage();
+			auto new_page = page->enterDir();
+			pageMgr.push(new_page);
+			term.Draw(new_page);
 			//std::cout << "\033[1C" << std::flush;
 		}
-		term.Draw(page);
 	}
 	return (0);
 }

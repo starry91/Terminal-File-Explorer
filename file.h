@@ -18,7 +18,7 @@ class File
     std::string name;
     char file_type;
     
-    File(std::string);
+    File(std::string dir, std::string name);
 };
 
 typedef std::shared_ptr<File> file_Sptr;

@@ -16,7 +16,7 @@ public:
   Page(std::string);
   void scrollDown();
   void scrollUp();
-  void enterDir();
+  std::shared_ptr<Page> enterDir();
 };
 
 typedef std::shared_ptr<Page> page_Sptr;

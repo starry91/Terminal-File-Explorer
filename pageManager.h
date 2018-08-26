@@ -15,6 +15,7 @@ class PageManager
     page_Sptr getCurrPage();
     void left();
     void right();
+    void push(page_Sptr);
     PageManager();
 };
 

@@ -11,3 +11,8 @@ PageManager::PageManager() {
 page_Sptr PageManager::getCurrPage() {
     return this->pageHistory[this->curr_state_index];
 }
+
+void PageManager::push(page_Sptr page) {
+    (this->pageHistory).push_back(page);
+    this->curr_state_index += 1;
+}

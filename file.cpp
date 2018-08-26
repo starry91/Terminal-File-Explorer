@@ -25,10 +25,10 @@ char *permissions(struct stat st)
     return mode;
 }
 
-File::File(std::string dir_entry)
+File::File(std::string path, std::string dir_entry)
 {
     struct stat fileStat;
-    if (stat(dir_entry.c_str(), &fileStat))
+    if (stat((path+"/"+dir_entry).c_str(), &fileStat))
         perror("Error getting file stat");
         
     this->permission = std::string(permissions(fileStat));
