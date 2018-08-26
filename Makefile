@@ -3,6 +3,7 @@ PROJECT_ROOT = $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 OBJS = termzilla.o Terminal.o fileAttr.o
 CFLAGS = -I.
 LDIR = -L.
+CFLAGS += -g
 #ifeq ($(BUILD_MODE),debug)
 #	CFLAGS += -g
 ##	CFLAGS += -O2

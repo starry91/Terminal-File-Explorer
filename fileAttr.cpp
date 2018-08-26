@@ -12,7 +12,7 @@ fileAttr::fileAttr(std::string perm, std::string usr_name,
     this->last_modified = last_modified;
     this->file_type = (perm[0] == 'd') ? 'd' : 'f';
     if (this->file_type == 'd')
-        this->name = "\033[35;10m" + name + "\033[0m";
+        this->name = name; //"\033[35;10m" + name + "\033[0m";
     else
         this->name = name;
 }
