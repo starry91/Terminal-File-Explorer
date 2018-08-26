@@ -5,7 +5,7 @@
 #include <unistd.h>
 #include <string>
 #include <memory>
-
+#include "path.h"
 Page::Page(std::string path = NULL)
 {
     if (path.empty())
@@ -43,8 +43,12 @@ page_Sptr Page::enterDir()
     auto file = this->files[this->highlight_index];
     if (file->file_type == 'd')
     {
-        std::string path = this->cwd + "/" + file->name;
-        //std::cout << "path: " << path << std::endl;
+        std::string path;
+        if(file->name == "..")
+            path = Path::getParentDir(this->cwd);
+        else if(file->name == ".")
+            path = this->cwd;
+            else path = this->cwd + "/" + file->name;
         return std::make_shared<Page>(Page((char *)path.c_str()));
     }
     else {
