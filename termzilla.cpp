@@ -47,8 +47,10 @@ int main()
 					page->scrollUp();
 					break;
 				case (int)Action::KEY_LEFT:
+					page = pageMgr.backward();
 					break;
 				case (int)Action::KEY_RIGHT:
+					page = pageMgr.forward();
 					break;
 				}
 			}
@@ -58,8 +60,11 @@ int main()
 		{
 			auto page = pageMgr.getCurrPage();
 			auto new_page = page->enterDir();
-			pageMgr.push(new_page);
-			term.Draw(new_page);
+			if (new_page != NULL)  //if opening a folder
+			{
+				pageMgr.push(new_page);
+				term.Draw(new_page);
+			}
 			//std::cout << "\033[1C" << std::flush;
 		}
 	}

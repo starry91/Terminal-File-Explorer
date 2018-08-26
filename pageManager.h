@@ -13,8 +13,8 @@ class PageManager
     int curr_state_index;
 
     page_Sptr getCurrPage();
-    void left();
-    void right();
+    page_Sptr backward();
+    page_Sptr forward();
     void push(page_Sptr);
     PageManager();
 };

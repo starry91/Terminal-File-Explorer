@@ -6,6 +6,8 @@
 #include <string>
 #include <memory>
 #include "path.h"
+#include <sys/wait.h>
+
 Page::Page(std::string path = NULL)
 {
     if (path.empty())
@@ -37,21 +39,34 @@ void Page::scrollUp()
         this->highlight_index -= 1;
 }
 
-
 page_Sptr Page::enterDir()
 {
     auto file = this->files[this->highlight_index];
     if (file->file_type == 'd')
     {
         std::string path;
-        if(file->name == "..")
+        if (file->name == "..")
             path = Path::getParentDir(this->cwd);
-        else if(file->name == ".")
+        else if (file->name == ".")
             path = this->cwd;
-            else path = this->cwd + "/" + file->name;
+        else
+            path = this->cwd + "/" + file->name;
         return std::make_shared<Page>(Page((char *)path.c_str()));
     }
-    else {
-        perror("Not a directory");
+    else
+    {
+        int pid = fork();
+        if (pid == 0)
+        { //child
+            char * args[3];
+            args[0] = (char*)"xdg-open";
+            args[1] = (char*)(this->cwd + "/" + file->name).c_str();    
+            args[2] = NULL;            
+            execl ("/usr/bin/xdg-open", "xdg-open", file->name.c_str(), NULL);
+        }
+        else {
+            waitpid(-1,NULL,WUNTRACED);
+        }
     }
+    return NULL;
 }
