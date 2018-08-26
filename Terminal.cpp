@@ -1,148 +1,58 @@
 
-#include "Terminal.h"
 #include <sys/ioctl.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/types.h>
-#include <sys/stat.h>
-#include <dirent.h>
-#include "fileAttr.h"
-#include <pwd.h>
-#include <string.h>
-#include <string>
-#include "TerminalState.h"
 #include <iomanip>
-#include <algorithm>
+
+#include "Terminal.h"
+#include "page.h"
 
 //debug
 #include <thread> // std::this_thread::sleep_for
 #include <chrono>
 
-//find permissions
-char *permissions(struct stat st)
+//Draw the current state
+void Terminal::Draw(page_Sptr page)
 {
-    char *mode = (char *)malloc(sizeof(char) * 10 + 1);
-    mode_t perm = st.st_mode;
-    mode[0] = (perm & S_IFDIR) ? 'd' : '-';
-    mode[1] = (perm & S_IRUSR) ? 'r' : '-';
-    mode[2] = (perm & S_IWUSR) ? 'w' : '-';
-    mode[3] = (perm & S_IXUSR) ? 'x' : '-';
-    mode[4] = (perm & S_IRGRP) ? 'r' : '-';
-    mode[5] = (perm & S_IWGRP) ? 'w' : '-';
-    mode[6] = (perm & S_IXGRP) ? 'x' : '-';
-    mode[7] = (perm & S_IROTH) ? 'r' : '-';
-    mode[8] = (perm & S_IWOTH) ? 'w' : '-';
-    mode[9] = (perm & S_IXOTH) ? 'x' : '-';
-    mode[10] = '\0';
-    return mode;
-}
-
-//update Terminal Dimensions
-std::pair<int, int> Terminal::updateTermDim()
-{
+    std::cout << "\e[2J" << std::flush;
     struct winsize ws;
     ioctl(STDIN_FILENO, TIOCGWINSZ, &ws);
-    std::pair<int, int> dims(ws.ws_row, ws.ws_col);
-    return dims;
-}
+    int rows = ws.ws_row;
+    int col = ws.ws_col;
 
-//constructor
-Terminal::Terminal()
-{
-    std::pair<int, int> temp = updateTermDim();
-    this->rows = temp.first;
-    this->cols = temp.second;
-    if (tcgetattr(0, &(this->orig_term_state)))
-    {
-        fprintf(stderr, "Error getting current terminal settings");
-    }
-    char *current_dir = get_current_dir_name();
-    this->state_history.push_back(getDirListing(current_dir));
-    this->prev_state_index = -1;
-    this->curr_state_index = 0;
-    this->curr_term_state = this->orig_term_state;
-}
+    int highlight_index = page->highlight_index;
+    int begin = (highlight_index > rows - 3) ? (highlight_index - rows + 3) : 0;
+    int offset = (rows - 2 > (page->files.size() - begin)) ? page->files.size() - begin : rows - 2;
 
-//get directory listing
-TerminalState Terminal::getDirListing(const char *path)
-{
-    DIR *dp;
-    dp = opendir(path);
-    if (dp == NULL)
+    std::cout << "\033[1;1H"; //Move cursor to start
+    std::cout << "Current Directory: " << page->cwd + "/";
+    int cursor_row = 2;
+    for (int i = begin; i < begin + offset; i++)
     {
-        perror("Unable to open");
-    }
-    TerminalState state; //Creating new terminal state
-    state.highlight_index = 0;
-    state.start_index = 0;
-    state.cwd = std::string(path);
-
-    struct dirent *entry;
-    while ((entry = readdir(dp)))
-    {
-        std::cout << "d: " << entry->d_name << std::endl;
-        //std::this_thread::sleep_for(std::chrono::seconds(5));
-        struct stat fileStat;
-        if(stat(entry->d_name, &fileStat))
-            perror("Error at stat");
-        fileAttr file(std::string(permissions(fileStat)),
-                      getpwuid(fileStat.st_uid)->pw_name,
-                      getpwuid(fileStat.st_gid)->pw_name,
-                      fileStat.st_size,
-                      std::string(strtok(ctime(&fileStat.st_mtime), "\n")),
-                      entry->d_name);
-        state.files.push_back(file);
-        // state.files.push_back(file);
-        // state.files.push_back(file);
-        // state.files.push_back(file);
-        // state.files.push_back(file);
-    }
-    closedir(dp);
-    return state;
-}
-
-//Draw the current state
-void Terminal::Draw()
-{
-    std::cout << "\033[?1049h"; //New Screen
-    std::cout << "\033[0;0H";   //Move cursor to start
-    //std::cout << "\033[?;25l";   //Hide Cursor
-    if (curr_state_index >= 0)
-    {
-        TerminalState &state = this->state_history[curr_state_index];
-        int highlight_index = state.highlight_index;
-        int end_index = std::min((int)state.files.size(), (int)this->rows + (int)state.start_index - 2); //-2 as priting dir in the begenning and last row due to cursor
-        std::cout << "Current Directory: " << state.cwd + "/";
-        for (int i = state.start_index; i < end_index; i++)
+        std::cout << "\033[" << cursor_row << ";0H";
+        std::cout << page->files[i]->permission << " ";
+        std::cout << page->files[i]->usr_name << " ";
+        std::cout << page->files[i]->grp_name << " ";
+        std::cout << std::right << std::setw(6) << page->files[i]->size << " ";
+        std::cout << page->files[i]->last_modified;
+        if (highlight_index == i)
         {
-            std::cout << std::endl;
-            fileAttr file = state.files[i];
-            std::cout << file.permission << " ";
-            std::cout << file.usr_name << " ";
-            std::cout << file.grp_name << " ";
-            std::cout << std::right << std::setw(6) << file.size << " ";
-            std::cout << file.last_modified;
-            if (highlight_index == i)
-            {
-                std::cout << "\033[30;46m " << file.name << " "
-                          << "\033[0m ";
-                //std::cout << state.start_index << " " << state.highlight_index << " " << state.files.size();
-            }
-            else
-            {
-                if (file.file_type == 'd')
-                    std::cout << "\033[35;10m " << file.name << " \033[0m";
-                else
-                    std::cout << " " << file.name << " ";
-            }
-            //std::this_thread::sleep_for(std::chrono::seconds(1));
+            std::cout << "\033[30;46m " << page->files[i]->name << " "
+                      << "\033[0m ";
+            //std::cout << state.start_index << " " << state.highlight_index << " " << state.files.size();
         }
+        else
+        {
+            if (page->files[i]->file_type == 'd')
+                std::cout << "\033[35;10m " << page->files[i]->name << " \033[0m";
+            else
+                std::cout << " " << page->files[i]->name << " ";
+        }
+        std::cout << std::flush;
+        cursor_row += 1;
+        //std::this_thread::sleep_for(std::chrono::seconds(1));
     }
-}
-
-void Terminal::startEmulation()
-{
-    Draw();
 }
 
 // set non-canon parameters
@@ -167,40 +77,4 @@ int Terminal::setParams()
         return 3;
     }
     return 0;
-}
-
-void Terminal::scrollDown()
-{
-    TerminalState &state = this->state_history[this->curr_state_index];
-    if (state.highlight_index < state.files.size() - 1)
-        state.highlight_index += 1;
-    if (state.start_index + this->rows - 3 < state.highlight_index) //-3 as priting dir in the begenning and last row due to cursor
-        state.start_index += 1;
-    this->Draw();
-}
-
-void Terminal::scrollUp()
-{
-    TerminalState &state = this->state_history[this->curr_state_index];
-    if (state.highlight_index >= 1)
-        state.highlight_index -= 1;
-    if (state.start_index > state.highlight_index)
-        state.start_index -= 1;
-    this->Draw();
-}
-
-void Terminal::enterDir()
-{
-    TerminalState &state = this->state_history[this->curr_state_index];
-    fileAttr file = state.files[state.highlight_index];
-    if (file.file_type == 'd')
-    {
-        std::string path = state.cwd + "/" + file.name;
-        std::cout << "path: " << path << std::endl;
-        TerminalState state = getDirListing((char*)path.c_str());
-        this->state_history.push_back(state);
-        this->prev_state_index = this->curr_state_index;
-        this->curr_state_index = this->curr_state_index + 1;
-        this->Draw();
-    }
 }

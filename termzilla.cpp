@@ -1,20 +1,10 @@
-#include <sys/ioctl.h>
 #include <iostream>
-#include <utility>
-#include "Terminal.h"
-#include <string>
 #include <chrono>
 #include <thread>
-#include <stdio.h>
-#include <string.h>
-#include <vector>
-#include <stdlib.h>
-#include "fileAttr.h"
 #include <unistd.h>
-//For non-canonocal mode
-#include <termios.h>
-//Terminal State
-#include "TerminalState.h"
+
+#include "Terminal.h"
+#include "pageManager.h"
 
 //Actions for non-canonical mode
 enum class Action
@@ -29,15 +19,19 @@ enum class Action
 
 int main()
 {
+	PageManager pageMgr;
 	Terminal term;
 	char input;
-	term.setParams();	  //set non-canonical params
-	term.startEmulation(); //start emulation
+	term.setParams(); //set non-canonical params
+
+	page_Sptr page = pageMgr.getCurrPage();
+	term.Draw(page);
 
 	fflush(stdout);
 	while (read(0, &input, 1))
 	{
-		std::cout << (int)input << std::endl;
+		page_Sptr page = pageMgr.getCurrPage();
+		//std::cout << (int)input << std::endl;
 		if (input == '\033')
 		{
 			read(0, &input, 1);
@@ -47,11 +41,11 @@ int main()
 				switch ((int)input)
 				{
 				case (int)Action::KEY_DOWN:
-					term.scrollDown();
+					page->scrollDown();
 					//std::cout << "\033[1B" << std::flush;
 					break;
 				case (int)Action::KEY_UP:
-					term.scrollUp();
+					page->scrollUp();
 					//std::cout << "\033[1A" << std::flush;
 					break;
 				case (int)Action::KEY_LEFT:
@@ -65,9 +59,10 @@ int main()
 		}
 		else if ((int)input == (int)Action::KEY_ENTER)
 		{
-			term.enterDir();
+			//term.enterDir();
 			//std::cout << "\033[1C" << std::flush;
 		}
+		term.Draw(page);
 	}
 	return (0);
 }
