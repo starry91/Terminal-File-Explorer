@@ -7,7 +7,7 @@
 
 #include "Terminal.h"
 #include "page.h"
-
+#include "path.h"
 //debug
 #include <thread> // std::this_thread::sleep_for
 #include <chrono>
@@ -26,7 +26,7 @@ void Terminal::Draw(page_Sptr page)
     int offset = (rows - 2 > (page->files.size() - begin)) ? page->files.size() - begin : rows - 2;
 
     std::cout << "\033[1;1H"; //Move cursor to start
-    std::cout << "Current Directory: " << page->cwd + "/";
+    std::cout << "Current Directory: " << Path::getAppAbsPath(page->cwd + "/");
     int cursor_row = 2;
     for (int i = begin; i < begin + offset; i++)
     {

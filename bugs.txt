@@ -1,0 +1,2 @@
+1) xdg-open unable to launch .json
+2) make the / as the launch dir

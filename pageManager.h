@@ -4,13 +4,14 @@
 #include <vector>
 #include "page.h"
 #include <memory>
-
+#include <string>
 
 class PageManager
 {
   public:
     std::vector<page_Sptr> pageHistory;
     int curr_state_index;
+    std::string home_dir;
 
     page_Sptr getCurrPage();
     page_Sptr backward();
@@ -18,6 +19,7 @@ class PageManager
     void push(page_Sptr);
     void pop();
     int getCurrStateIndex();
+    std::string getHomeDir();
     PageManager();
 };
 

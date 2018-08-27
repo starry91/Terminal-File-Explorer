@@ -2,12 +2,20 @@
 #include <unistd.h>
 #include <memory>
 #include <syslog.h>
+#include "path.h"
 
 PageManager::PageManager()
 {
     char *current_dir = get_current_dir_name();
+    this->home_dir = std::string(current_dir);
+    syslog(0, "PageMGr/ Current Dir: %s",current_dir);
+    Path::HOME_APPLICATION = std::string(current_dir);
     this->pageHistory.push_back(std::make_shared<Page>(Page(std::string(current_dir))));
     this->curr_state_index = 0;
+}
+
+std::string PageManager::getHomeDir(){
+    return this->home_dir;
 }
 
 page_Sptr PageManager::getCurrPage()
