@@ -16,6 +16,8 @@ class PageManager
     page_Sptr backward();
     page_Sptr forward();
     void push(page_Sptr);
+    void pop();
+    int getCurrStateIndex();
     PageManager();
 };
 

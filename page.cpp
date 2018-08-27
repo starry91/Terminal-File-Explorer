@@ -7,6 +7,7 @@
 #include <memory>
 #include "path.h"
 #include <sys/wait.h>
+#include <syslog.h>
 
 Page::Page(std::string path = NULL)
 {
@@ -58,14 +59,14 @@ page_Sptr Page::enterDir()
         int pid = fork();
         if (pid == 0)
         { //child
-            char * args[3];
-            args[0] = (char*)"xdg-open";
-            args[1] = (char*)(this->cwd + "/" + file->name).c_str();    
-            args[2] = NULL;            
+            //char * const args[3] = {"xdg-open", (char*) (this->cwd + "/" + file->name).c_str(), NULL};
+            //execvp ("/usr/bin/xdg-open", args);            
             execl ("/usr/bin/xdg-open", "xdg-open", file->name.c_str(), NULL);
         }
         else {
-            waitpid(-1,NULL,WUNTRACED);
+            int err = waitpid(-1,NULL,WUNTRACED);
+            syslog(0, "Waiting: %d",err);
+
         }
     }
     return NULL;

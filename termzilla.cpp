@@ -58,12 +58,15 @@ int main()
 		}
 		else if ((int)input == (int)Action::KEY_ENTER)
 		{
-			auto page = pageMgr.getCurrPage();
-			auto new_page = page->enterDir();
-			if (new_page != NULL)  //if opening a folder
+			page_Sptr new_page = page->enterDir();
+			if (new_page != NULL) //if opening a folder
 			{
+				int curr_index = pageMgr.getCurrStateIndex();
+				while(pageMgr.pageHistory.size() > curr_index + 1)
+					pageMgr.pop();
 				pageMgr.push(new_page);
-				term.Draw(new_page);
+				page = pageMgr.getCurrPage();
+				term.Draw(page);
 			}
 			//std::cout << "\033[1C" << std::flush;
 		}
