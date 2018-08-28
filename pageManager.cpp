@@ -4,6 +4,10 @@
 #include <syslog.h>
 #include "path.h"
 
+namespace Path{
+    std::string HOME_APPLICATION;
+}
+
 PageManager::PageManager()
 {
     char *current_dir = get_current_dir_name();

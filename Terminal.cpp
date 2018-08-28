@@ -4,16 +4,16 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <iomanip>
-
+#include <string>
 #include "Terminal.h"
 #include "page.h"
 #include "path.h"
 //debug
 #include <thread> // std::this_thread::sleep_for
 #include <chrono>
-
+#include <syslog.h>
 //Draw the current state
-void Terminal::Draw(page_Sptr page)
+void Terminal::DrawView(page_Sptr page)
 {
     std::cout << "\e[2J" << std::flush;
     struct winsize ws;
@@ -53,10 +53,34 @@ void Terminal::Draw(page_Sptr page)
         cursor_row += 1;
         //std::this_thread::sleep_for(std::chrono::seconds(1));
     }
+    syslog(0, "Mode: %d Rows: %d", (int)mode, rows);
+    if (this->mode == Mode::COMMAND)
+        std::cout << "\033[" << rows << ";0H"
+                  << ":" << std::flush;
+}
+
+void Terminal::DrawCommand(std::string cmd)
+{
+    struct winsize ws;
+    ioctl(STDIN_FILENO, TIOCGWINSZ, &ws);
+    int rows = ws.ws_row;
+    int col = ws.ws_col;
+    this->eraseStatusBar();
+    std::cout << ":" << cmd << std::flush;
+}
+
+void Terminal::eraseStatusBar()
+{
+    struct winsize ws;
+    ioctl(STDIN_FILENO, TIOCGWINSZ, &ws);
+    int rows = ws.ws_row;
+    int col = ws.ws_col;
+    std::cout << "\033[" << rows << ";0H"
+              << "\033[K" << std::flush;
 }
 
 // set non-canon parameters
-int Terminal::setParams()
+int Terminal::switchToNormalMode()
 {
     std::cout << "\033[?1049h";         //New Screen
     std::cout << "\033[0;0H";           //Move cursor to start
@@ -76,5 +100,19 @@ int Terminal::setParams()
         perror("error setting terminal settings");
         return 3;
     }
+    this->mode = Mode::NORMAL;
+    return 0;
+}
+
+int Terminal::switchToCommandMode()
+{
+    curr_term_state = orig_term_state;
+
+    if (tcsetattr(0, TCSANOW, &curr_term_state)) //set terminal state
+    {
+        perror("error setting terminal settings");
+        return 3;
+    }
+    this->mode = Mode::COMMAND;
     return 0;
 }

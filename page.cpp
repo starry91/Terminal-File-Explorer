@@ -63,7 +63,8 @@ page_Sptr Page::enterDir()
         { //child
             //char * const args[3] = {"xdg-open", (char*) (this->cwd + "/" + file->name).c_str(), NULL};
             //execvp ("/usr/bin/xdg-open", args);
-            execl("/usr/bin/xdg-open", "xdg-open", file->name.c_str(), NULL);
+            std::string path = this->cwd +"/"+file->name;
+            execl("/usr/bin/xdg-open", "xdg-open", path.c_str(), NULL);
         }
         else
         {
