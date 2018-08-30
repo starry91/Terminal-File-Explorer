@@ -4,10 +4,11 @@
 #include <vector>
 #include <string>
 
-Class CommandHandler
+class CommandHandler
 {
     public:
-    void copyFile(std::string file,std::string dir);    
+    void copyFile(std::string file,std::string dir);
+    void copyFiles(const std::vector<std::string>& files);     
 };
 
 #endif

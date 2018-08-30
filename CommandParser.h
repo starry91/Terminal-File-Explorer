@@ -3,11 +3,12 @@
 
 #include <vector>
 #include <string>
+#include "page.h"
 
-Class CommandParser
+class CommandParser
 {
     public:
-    std::Vector<std::string> getArgs(std::string);    
+    std::vector<std::string> getArgs(std::string, page_Sptr);    
 };
 
 #endif

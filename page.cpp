@@ -43,15 +43,15 @@ void Page::scrollUp()
 page_Sptr Page::enterDir()
 {
     auto file = this->files[this->highlight_index];
-    if (file->file_type == 'd')
+    if (file->getFileType() == 'd')
     {
         std::string path;
-        if (file->name == "..")
+        if (file->getFileName() == "..")
             path = Path::getParentDir(this->cwd);
-        else if (file->name == ".")
+        else if (file->getFileName() == ".")
             path = this->cwd;
         else
-            path = this->cwd + "/" + file->name;
+            path = this->cwd + "/" + file->getFileName();
         if (path.length() >= Path::HOME_APPLICATION.length())
             return std::make_shared<Page>(Page((char *)path.c_str()));
         //syslog(0, "Waiting: %s", path);
@@ -63,7 +63,7 @@ page_Sptr Page::enterDir()
         { //child
             //char * const args[3] = {"xdg-open", (char*) (this->cwd + "/" + file->name).c_str(), NULL};
             //execvp ("/usr/bin/xdg-open", args);
-            std::string path = this->cwd +"/"+file->name;
+            std::string path = this->cwd +"/"+file->getFileName();
             execl("/usr/bin/xdg-open", "xdg-open", path.c_str(), NULL);
         }
         else

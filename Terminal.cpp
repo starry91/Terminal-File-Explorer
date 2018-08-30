@@ -31,23 +31,23 @@ void Terminal::DrawView(page_Sptr page)
     for (int i = begin; i < begin + offset; i++)
     {
         std::cout << "\033[" << cursor_row << ";0H";
-        std::cout << page->files[i]->permission << " ";
-        std::cout << page->files[i]->usr_name << " ";
-        std::cout << page->files[i]->grp_name << " ";
-        std::cout << std::right << std::setw(6) << page->files[i]->size << " ";
-        std::cout << page->files[i]->last_modified;
+        std::cout << page->files[i]->getPermission() << " ";
+        std::cout << page->files[i]->getUserName() << " ";
+        std::cout << page->files[i]->getGroupName() << " ";
+        std::cout << std::right << std::setw(6) << page->files[i]->getSize() << " ";
+        std::cout << page->files[i]->getLastModified();
         if (highlight_index == i)
         {
-            std::cout << "\033[30;46m " << page->files[i]->name << " "
+            std::cout << "\033[30;46m " << page->files[i]->getFileName() << " "
                       << "\033[0m ";
             //std::cout << state.start_index << " " << state.highlight_index << " " << state.files.size();
         }
         else
         {
-            if (page->files[i]->file_type == 'd')
-                std::cout << "\033[35;10m " << page->files[i]->name << " \033[0m";
+            if (page->files[i]->getFileType() == 'd')
+                std::cout << "\033[35;10m " << page->files[i]->getFileName() << " \033[0m";
             else
-                std::cout << " " << page->files[i]->name << " ";
+                std::cout << " " << page->files[i]->getFileName() << " ";
         }
         std::cout << std::flush;
         cursor_row += 1;

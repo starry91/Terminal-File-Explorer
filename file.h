@@ -9,16 +9,19 @@
 
 class File
 {
+  struct stat fileStat;
+  std::string dir_entry;
   public:
-    std::string permission;
-    std::string usr_name;
-    std::string grp_name;
-    long long size;
-    std::string last_modified;
-    std::string name;
-    char file_type;
-    
+    std::string getUserName();
+    std::string getGroupName();
+    std::string getPermission();
+    mode_t getFilePerms();
+    size_t getSize();
+    std::string getLastModified();
+    char getFileType();
+    std::string getFileName();
     File(std::string dir, std::string name);
+    File(std::string path);
 };
 
 typedef std::shared_ptr<File> file_Sptr;

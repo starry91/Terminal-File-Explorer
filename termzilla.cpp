@@ -6,6 +6,8 @@
 #include "Terminal.h"
 #include "pageManager.h"
 #include <cstring>
+#include "CommandHandler.h"
+#include "CommandParser.h"
 //Actions for non-canonical mode
 enum class Action
 {
@@ -29,6 +31,8 @@ int main()
 
 	page_Sptr page = pageMgr.getCurrPage();
 	term.DrawView(page);
+	CommandHandler cmdHandler;
+	CommandParser cmdParser;
 
 	fflush(stdout);
 	while (read(0, &input, 1))
@@ -128,7 +132,13 @@ int main()
 					}
 					else if (input == '\n')
 					{
-						syslog(0, "Returning command");
+						syslog(0, "Buffer: [%s]", buffer);
+						std::vector<std::string> command_args = cmdParser.getArgs(std::string(buffer),page);
+						for(auto it = command_args.begin(); it != command_args.end(); it++)
+							syslog(0, "Arg: [%s]",(*it).c_str());
+						if(command_args[0] == "Copy") {
+							cmdHandler.copyFiles(command_args);
+						}
 						term.eraseStatusBar();
 						term.DrawCommand("");
 						std::memset(buffer, 0, 1024);
