@@ -133,11 +133,12 @@ int main()
 					else if (input == '\n')
 					{
 						syslog(0, "Buffer: [%s]", buffer);
-						std::vector<std::string> command_args = cmdParser.getArgs(std::string(buffer),page);
-						for(auto it = command_args.begin(); it != command_args.end(); it++)
+						std::vector<std::string> command_args = cmdParser.getArgs(std::string(buffer));
+						std::vector<std::string> translated_args = cmdParser.translateArgs(command_args, page);
+						for(auto it = translated_args.begin(); it != translated_args.end(); it++)
 							syslog(0, "Arg: [%s]",(*it).c_str());
-						if(command_args[0] == "Copy") {
-							cmdHandler.copyFiles(command_args);
+						if(translated_args[0] == "Copy") {
+							cmdHandler.copyFiles(translated_args);
 						}
 						term.eraseStatusBar();
 						term.DrawCommand("");

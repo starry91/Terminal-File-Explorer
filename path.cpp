@@ -1,6 +1,22 @@
 #include "path.h"
 #include <syslog.h>
 
+void Path::setHomePath(std::string home_path)
+{
+    this->HOME_APPLICATION = home_path;
+};
+
+std::string Path::getHomePath()
+{
+    return this->HOME_APPLICATION;
+};
+
+Path& Path::getInstance()
+{
+    static Path path;
+    return path;
+}
+
 std::string Path::getParentDir(std::string dir)
 {
     int count = 0, start = dir.length() - 1;

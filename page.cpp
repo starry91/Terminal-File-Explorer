@@ -45,14 +45,15 @@ page_Sptr Page::enterDir()
     auto file = this->files[this->highlight_index];
     if (file->getFileType() == 'd')
     {
+        auto path_obj = Path::getInstance();
         std::string path;
         if (file->getFileName() == "..")
-            path = Path::getParentDir(this->cwd);
+            path = path_obj.getParentDir(this->cwd);
         else if (file->getFileName() == ".")
             path = this->cwd;
         else
             path = this->cwd + "/" + file->getFileName();
-        if (path.length() >= Path::HOME_APPLICATION.length())
+        if (path.length() >= path_obj.getHomePath().length())
             return std::make_shared<Page>(Page((char *)path.c_str()));
         //syslog(0, "Waiting: %s", path);
     }
@@ -77,13 +78,15 @@ page_Sptr Page::enterDir()
 
 page_Sptr Page::gotoParent()
 {
-    std::string path = Path::getParentDir(this->cwd);
-    if (path.length() >= Path::HOME_APPLICATION.length())
+    auto path_obj = Path::getInstance();
+    std::string path = path_obj.getParentDir(this->cwd);
+    if (path.length() >= path_obj.getHomePath().length())
         return std::make_shared<Page>(Page((char *)path.c_str()));
     return NULL;
 }
 
 page_Sptr Page::gotoHome(std::string path)
 {
-    return std::make_shared<Page>(Page((char *)Path::HOME_APPLICATION.c_str()));
+    auto path_obj = Path::getInstance();
+    return std::make_shared<Page>(Page((char *)path_obj.getHomePath().c_str()));
 }

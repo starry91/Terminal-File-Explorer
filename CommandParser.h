@@ -8,7 +8,8 @@
 class CommandParser
 {
     public:
-    std::vector<std::string> getArgs(std::string, page_Sptr);    
+    std::vector<std::string> getArgs(std::string);
+    std::vector<std::string> translateArgs(std::vector<std::string>, page_Sptr page);
 };
 
 #endif

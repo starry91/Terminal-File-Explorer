@@ -4,13 +4,20 @@
 
 #include <string>
 
-namespace Path
+class Path
 {
-extern std::string HOME_APPLICATION;
-std::string getSystemAbsPath(std::string dir);
-std::string getAppAbsPath(std::string dir);
-std::string getParentDir(std::string dir);
-std::string getCurrDir(std::string dir);
+  protected:
+    std::string HOME_APPLICATION;
+    Path(){};
+
+  public:
+    static Path &getInstance();
+    void setHomePath(std::string);
+    std::string getHomePath();
+    std::string getSystemAbsPath(std::string dir);
+    std::string getAppAbsPath(std::string dir);
+    std::string getParentDir(std::string dir);
+    std::string getCurrDir(std::string dir);
 }; // namespace Path
 
 #endif

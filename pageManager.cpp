@@ -4,16 +4,13 @@
 #include <syslog.h>
 #include "path.h"
 
-namespace Path{
-    std::string HOME_APPLICATION;
-}
-
 PageManager::PageManager()
 {
     char *current_dir = get_current_dir_name();
     this->home_dir = std::string(current_dir);
     syslog(0, "PageMGr/ Current Dir: %s",current_dir);
-    Path::HOME_APPLICATION = std::string(current_dir);
+    auto path = Path::getInstance();
+    path.setHomePath(std::string(current_dir));
     this->pageHistory.push_back(std::make_shared<Page>(Page(std::string(current_dir))));
     this->curr_state_index = 0;
 }
