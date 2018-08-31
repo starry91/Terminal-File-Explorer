@@ -11,7 +11,7 @@ class Path
     Path(){};
 
   public:
-    static Path &getInstance();
+    static Path& getInstance();
     void setHomePath(std::string);
     std::string getHomePath();
     std::string getSystemAbsPath(std::string dir);

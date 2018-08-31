@@ -8,6 +8,7 @@
 #include <cstring>
 #include "CommandHandler.h"
 #include "CommandParser.h"
+#include "path.h"
 //Actions for non-canonical mode
 enum class Action
 {
@@ -25,6 +26,8 @@ enum class Action
 int main()
 {
 	PageManager pageMgr;
+	auto path_obj = Path::getInstance();
+	syslog(0, "Main Home: %s", path_obj.getHomePath().c_str());
 	Terminal term;
 	char input;
 	term.switchToNormalMode(); //set non-canonical params
@@ -123,7 +126,7 @@ int main()
 							start++;
 							syslog(0, "Hello Input: %s", buffer);
 						}
-						else if(start > 0)
+						else if (start > 0)
 						{
 							buffer[start - 1] = 0;
 							start--;
@@ -135,10 +138,21 @@ int main()
 						syslog(0, "Buffer: [%s]", buffer);
 						std::vector<std::string> command_args = cmdParser.getArgs(std::string(buffer));
 						std::vector<std::string> translated_args = cmdParser.translateArgs(command_args, page);
-						for(auto it = translated_args.begin(); it != translated_args.end(); it++)
-							syslog(0, "Arg: [%s]",(*it).c_str());
-						if(translated_args[0] == "Copy") {
+						for (auto it = translated_args.begin(); it != translated_args.end(); it++)
+							syslog(0, "Arg: [%s]", (*it).c_str());
+						if (translated_args[0] == "copy")
+						{
+							syslog(0, "Copy Command Entered");
 							cmdHandler.copyFiles(translated_args);
+						}
+						else if (translated_args[0] == "move")
+						{
+							syslog(0, "Move Command Entered");
+							cmdHandler.copyFiles(translated_args);
+							cmdHandler.delFiles(translated_args);
+							pageMgr.updateCurrPage();
+							page = pageMgr.getCurrPage();
+							term.DrawView(page);
 						}
 						term.eraseStatusBar();
 						term.DrawCommand("");

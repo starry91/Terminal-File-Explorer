@@ -39,14 +39,15 @@ std::string Path::getCurrDir(std::string dir)
 
 std::string Path::getAppAbsPath(std::string dir)
 {
-    syslog(0, "Path: %s Home: %s", dir.c_str(), Path::HOME_APPLICATION.c_str());
-    if (dir.length() >= Path::HOME_APPLICATION.length())
-        return dir.substr(Path::HOME_APPLICATION.length(), dir.length() - 1);
+    
+    syslog(0, "Path: %s Home: %s", dir.c_str(), this->HOME_APPLICATION.c_str());
+    if (dir.length() >= this->HOME_APPLICATION.length())
+        return dir.substr(this->HOME_APPLICATION.length(), dir.length() - this->HOME_APPLICATION.length());
     else
         return std::string("");
 }
 
 std::string Path::getSystemAbsPath(std::string dir)
 {
-    return Path::HOME_APPLICATION + dir;
+    return this->HOME_APPLICATION + dir;
 }

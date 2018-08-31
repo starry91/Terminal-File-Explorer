@@ -20,6 +20,7 @@ class PageManager
     void pop();
     int getCurrStateIndex();
     std::string getHomeDir();
+    void updateCurrPage();
     PageManager();
 };
 

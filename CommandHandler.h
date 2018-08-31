@@ -9,7 +9,10 @@ class CommandHandler
     public:
     void copyFile(std::string file,std::string dir);
     void copyFiles(const std::vector<std::string>& files);
-    void copyDir(std::string source_dir, std::string dest_dir);     
+    void copyDir(std::string source_dir, std::string dest_dir);
+    void delFiles(const std::vector<std::string>& files);
+    void delFile(std::string file);
+    void delDir(std::string source_dir);     
 };
 
 #endif

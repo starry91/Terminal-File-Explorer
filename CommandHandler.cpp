@@ -5,6 +5,7 @@
 #include "file.h"
 #include "page.h"
 #include "path.h"
+#include <unistd.h>
 
 void setFilePerms(std::string file, mode_t perms)
 {
@@ -69,9 +70,52 @@ void CommandHandler::copyDir(std::string source_dir, std::string dest_dir)
             copyDir(source_dir + "/" + name, dest_dir);
             syslog(0, "Directory: %s copied", (source_dir + "/" + name).c_str());
         }
-        else if(name != "." && name != "..")
+        else if (name != "." && name != "..")
         {
             copyFile(source_dir + "/" + name, dest_dir);
         }
     }
+}
+
+void CommandHandler::delFiles(const std::vector<std::string> &files)
+{
+    std::string dest = files[files.size() - 1];
+    for (int i = 1; i < files.size() - 1; i++)
+    {
+        File file = File(files[i]);
+        if (file.getFileType() == 'd')
+        {
+            //syslog(0, "In copy file/ copy dir: %s", files[i].c_str());
+            delDir(files[i]);
+        }
+        else if (file.getFileName() != "." && file.getFileName() != "..")
+        {
+            //syslog(0, "In copy file/ copy file: %s", files[i].c_str());
+            delFile(files[i]);
+        }
+    }
+}
+
+void CommandHandler::delFile(std::string file)
+{
+    unlink(file.c_str());
+}
+
+void CommandHandler::delDir(std::string source_dir)
+{
+    auto page = std::make_shared<Page>(Page(source_dir));
+    File folder = File(source_dir);
+    for (auto it = page->files.begin(); it != page->files.end(); it++)
+    {
+        std::string name = (*it)->getFileName();
+        if ((*it)->getFileType() == 'd' && name != "." && name != "..")
+        {
+            delDir(source_dir + "/" + name);
+        }
+        else if (name != "." && name != "..")
+        {
+            delFile(source_dir + "/" + name);
+        }
+    }
+    rmdir(source_dir.c_str());
 }
