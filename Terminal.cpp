@@ -26,7 +26,7 @@ void Terminal::DrawView(page_Sptr page)
     int offset = (rows - 2 > (page->files.size() - begin)) ? page->files.size() - begin : rows - 2;
 
     std::cout << "\033[1;1H"; //Move cursor to start
-    auto path = Path::getInstance();
+    auto& path = Path::getInstance();
     std::cout << "Current Directory: " << path.getAppAbsPath(page->cwd + "/");
     int cursor_row = 2;
     for (int i = begin; i < begin + offset; i++)

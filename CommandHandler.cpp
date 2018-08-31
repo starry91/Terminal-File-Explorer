@@ -6,6 +6,7 @@
 #include "page.h"
 #include "path.h"
 #include <unistd.h>
+#include <fstream>
 
 void setFilePerms(std::string file, mode_t perms)
 {
@@ -21,9 +22,8 @@ void CommandHandler::copyFile(std::string file, std::string dir)
     syslog(0, "FileName: %s", File(file).getFileName().c_str());
     syslog(0, "Source File: %s", file.c_str());
     syslog(0, "Dest File: %s", dest_file.c_str());
-    auto path_obj = Path::getInstance();
-    std::ifstream input(path_obj.getSystemAbsPath(file), std::ios::binary);
-    std::ofstream output(path_obj.getSystemAbsPath(dest_file), std::ios::binary);
+    std::ifstream input(file, std::ios::binary);
+    std::ofstream output(dest_file, std::ios::binary);
     std::copy(
         std::istreambuf_iterator<char>(input),
         std::istreambuf_iterator<char>(),
@@ -118,4 +118,29 @@ void CommandHandler::delDir(std::string source_dir)
         }
     }
     rmdir(source_dir.c_str());
+}
+
+void CommandHandler::rename(std::string old_name, std::string new_name)
+{
+    syslog(0, "Rename old %s", old_name.c_str());
+    syslog(0, "Rename new %s", new_name.c_str());
+    std::rename(old_name.c_str(), new_name.c_str());
+}
+
+void CommandHandler::createFile(std::string name, std::string dest_dir)
+{
+    if (File(name).getFileType() != 'd')
+    {
+        std::ofstream out((dest_dir + "/" + File(name).getFileName()));
+    }
+}
+
+void CommandHandler::createDir(std::string name, std::string dest_dir)
+{
+    mkdir((dest_dir + "/" + File(name).getFileName()).c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+}
+
+page_Sptr CommandHandler::goToDir(std::string dir)
+{
+    return std::make_shared<Page>(Page(dir));
 }

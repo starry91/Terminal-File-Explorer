@@ -1,6 +1,11 @@
 #include "path.h"
 #include <syslog.h>
 
+Path::Path()
+{
+    syslog(0, "Calling constructor");
+};
+
 void Path::setHomePath(std::string home_path)
 {
     this->HOME_APPLICATION = home_path;
@@ -11,9 +16,10 @@ std::string Path::getHomePath()
     return this->HOME_APPLICATION;
 };
 
-Path& Path::getInstance()
+Path & Path::getInstance()
 {
     static Path path;
+    syslog(0, "Address: %x", &path);
     return path;
 }
 
@@ -39,7 +45,7 @@ std::string Path::getCurrDir(std::string dir)
 
 std::string Path::getAppAbsPath(std::string dir)
 {
-    
+
     syslog(0, "Path: %s Home: %s", dir.c_str(), this->HOME_APPLICATION.c_str());
     if (dir.length() >= this->HOME_APPLICATION.length())
         return dir.substr(this->HOME_APPLICATION.length(), dir.length() - this->HOME_APPLICATION.length());

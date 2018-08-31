@@ -26,8 +26,9 @@ enum class Action
 int main()
 {
 	PageManager pageMgr;
-	auto path_obj = Path::getInstance();
-	syslog(0, "Main Home: %s", path_obj.getHomePath().c_str());
+	syslog(0, "Hello");
+	Path &path_obj = Path::getInstance();
+	syslog(0, "Main Home: %x", &path_obj);
 	Terminal term;
 	char input;
 	term.switchToNormalMode(); //set non-canonical params
@@ -154,12 +155,57 @@ int main()
 							page = pageMgr.getCurrPage();
 							term.DrawView(page);
 						}
+						else if (translated_args[0] == "rename")
+						{
+							cmdHandler.rename(translated_args[1], translated_args[2]);
+							pageMgr.updateCurrPage();
+							page = pageMgr.getCurrPage();
+							term.DrawView(page);
+						}
+						else if (translated_args[0] == "create_file")
+						{
+							cmdHandler.createFile(translated_args[1], translated_args[2]);
+							pageMgr.updateCurrPage();
+							page = pageMgr.getCurrPage();
+							term.DrawView(page);
+						}
+						else if (translated_args[0] == "create_dir")
+						{
+							cmdHandler.createDir(translated_args[1], translated_args[2]);
+							pageMgr.updateCurrPage();
+							page = pageMgr.getCurrPage();
+							term.DrawView(page);
+						}
+						else if (translated_args[0] == "delete_file")
+						{
+							cmdHandler.delFile(translated_args[1]);
+							pageMgr.updateCurrPage();
+							page = pageMgr.getCurrPage();
+							term.DrawView(page);
+						}
+						else if (translated_args[0] == "delete_dir")
+						{
+							cmdHandler.delDir(translated_args[1]);
+							pageMgr.updateCurrPage();
+							page = pageMgr.getCurrPage();
+							term.DrawView(page);
+						}
+						else if (translated_args[0] == "goto")
+						{
+							auto new_page = cmdHandler.goToDir(translated_args[1]);
+							int curr_index = pageMgr.getCurrStateIndex();
+							while (pageMgr.pageHistory.size() > curr_index + 1)
+								pageMgr.pop();
+							pageMgr.push(new_page);
+							page = pageMgr.getCurrPage();
+							term.DrawView(page);
+						}
 						term.eraseStatusBar();
 						term.DrawCommand("");
 						std::memset(buffer, 0, 1024);
 						start = 0;
 					}
-					else
+					else if((int)input == (int)Action::KEY_ESC)
 						break;
 				}
 				term.DrawView(page);

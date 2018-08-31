@@ -31,17 +31,26 @@ std::vector<std::string> CommandParser::translateArgs(std::vector<std::string> a
         }
         else if (args[start][0] == '.')
         {
-            processed_output.push_back(page->cwd + "/" + args[start].substr(1, args[start].length() - 1));
+            if (args[start].length() > 1)
+                processed_output.push_back(page->cwd + args[start].substr(1, args[start].length() - 1));
+            else
+                processed_output.push_back(page->cwd);
             //syslog(0, "Arg2: [%s]", (page->cwd + "/" + command.substr(i + 1, start - i)).c_str());
         }
         else if (args[start][0] == '/')
         {
-            processed_output.push_back(path_obj.getHomePath() + args[start]);
+            if (args[start].length() > 1)
+                processed_output.push_back(path_obj.getHomePath() + args[start]);
+            else
+                processed_output.push_back(path_obj.getHomePath());
             //syslog(0, "Arg3: [%s]", (path_obj.getHomePath() + command.substr(i, start - i + 1)).c_str());
         }
         else if (args[start][0] == '~')
         {
-            processed_output.push_back(path_obj.getHomePath() + "/" + args[start].substr(1, args[start].length() - 1));
+            if (args[start].length() > 1)
+                processed_output.push_back(path_obj.getHomePath() + "/" + args[start].substr(1, args[start].length() - 1));
+            else
+                processed_output.push_back(path_obj.getHomePath());
             //syslog(0, "Arg5: [%s]", (path_obj.getHomePath() + command.substr(i + 1, start - i)).c_str());
         }
         else

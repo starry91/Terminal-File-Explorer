@@ -9,7 +9,8 @@ PageManager::PageManager()
     char *current_dir = get_current_dir_name();
     this->home_dir = std::string(current_dir);
     syslog(0, "PageMGr/ Current Dir: %s", current_dir);
-    auto path = Path::getInstance();
+    auto& path = Path::getInstance();
+    syslog(0, "Page MGr Address: %x", &path);
     path.setHomePath(std::string(current_dir));
     syslog(0, "Page Manager Constructor: Home: %s ", path.getHomePath().c_str());
     this->pageHistory.push_back(std::make_shared<Page>(Page(std::string(current_dir))));
