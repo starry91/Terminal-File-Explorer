@@ -22,6 +22,7 @@ class File
     std::string getFileName();
     File(std::string dir, std::string name);
     File(std::string path);
+    File(std::string path, int);
 };
 
 typedef std::shared_ptr<File> file_Sptr;

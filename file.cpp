@@ -26,6 +26,10 @@ char *permissions(struct stat st)
     return mode;
 }
 
+File::File(std::string path, int search_mode) {
+    this->dir_entry = path;
+}
+
 File::File(std::string file)
 {
     std::vector<std::string> tokens;

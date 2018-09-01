@@ -28,6 +28,16 @@ Page::Page(std::string path = NULL)
     this->cwd = std::string(path);
 }
 
+Page::Page(std::vector<std::string> files)
+{
+    for (auto it = files.begin(); it != files.end(); it++)
+    {
+        this->files.push_back(std::make_shared<File>(*it, 0));
+        this->highlight_index = 0;
+    }
+    this->cwd = "search";
+}
+
 void Page::scrollDown()
 {
     if (this->highlight_index < this->files.size() - 1)
@@ -43,9 +53,16 @@ void Page::scrollUp()
 page_Sptr Page::enterDir()
 {
     auto file = this->files[this->highlight_index];
+    auto path_obj = Path::getInstance();
+    std::string search_path;
+    if (this->cwd == "search")
+    {
+        search_path = file->getFileName();
+        syslog(0, "Opening searh page: %s", search_path.c_str());
+        return std::make_shared<Page>(Page((char *)search_path.c_str()));
+    }
     if (file->getFileType() == 'd')
     {
-        auto path_obj = Path::getInstance();
         std::string path;
         if (file->getFileName() == "..")
             path = path_obj.getParentDir(this->cwd);
@@ -53,6 +70,7 @@ page_Sptr Page::enterDir()
             path = this->cwd;
         else
             path = this->cwd + "/" + file->getFileName();
+        //syslog(0, "Waiting: %s", path);
         if (path.length() >= path_obj.getHomePath().length())
             return std::make_shared<Page>(Page((char *)path.c_str()));
         //syslog(0, "Waiting: %s", path);
@@ -64,7 +82,7 @@ page_Sptr Page::enterDir()
         { //child
             //char * const args[3] = {"xdg-open", (char*) (this->cwd + "/" + file->name).c_str(), NULL};
             //execvp ("/usr/bin/xdg-open", args);
-            std::string path = this->cwd +"/"+file->getFileName();
+            std::string path = this->cwd + "/" + file->getFileName();
             execl("/usr/bin/xdg-open", "xdg-open", path.c_str(), NULL);
         }
         else

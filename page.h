@@ -14,6 +14,7 @@ public:
   std::string cwd;
 
   Page(std::string);
+  Page(std::vector<std::string>);
   void scrollDown();
   void scrollUp();
   std::shared_ptr<Page> gotoParent();

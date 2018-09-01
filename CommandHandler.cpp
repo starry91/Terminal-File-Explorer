@@ -129,7 +129,7 @@ void CommandHandler::rename(std::string old_name, std::string new_name)
 
 void CommandHandler::createFile(std::string name, std::string dest_dir)
 {
-    if (File(name).getFileType() != 'd')
+    //if (File(name).getFileType() != 'd')
     {
         std::ofstream out((dest_dir + "/" + File(name).getFileName()));
     }
@@ -151,14 +151,16 @@ void CommandHandler::search(std::string name, std::string dir, std::vector<std::
     auto page = std::make_shared<Page>(Page(dir));
     for (auto it = page->files.begin(); it != page->files.end(); it++)
     {
-        std::string abs_path = dir + "/" + (*it)->getFileName();
+        std::string abs_path;
         syslog(0, "In search search file path %s", abs_path.c_str());
         if ((*it)->getFileName() == name)
         {
+            abs_path = dir;
             output.push_back(abs_path);
         }
         else if ((*it)->getFileName() != "." && (*it)->getFileName() != ".." && (*it)->getFileType() == 'd')
         {
+            abs_path = dir + "/" + (*it)->getFileName();
             search(name, abs_path, output);
         }
     }
@@ -166,26 +168,29 @@ void CommandHandler::search(std::string name, std::string dir, std::vector<std::
 
 void CommandHandler::snapshot(std::string dir, std::string file)
 {
-    //syslog(0, "In search search path: %s", dir.c_str());
+    syslog(0, "Snapshot: dir %s  file %s", dir.c_str(), file.c_str());
     auto page = std::make_shared<Page>(Page(dir));
+    std::ofstream outfile(file, std::ofstream::binary | std::ofstream::out | std::ofstream::app);
+    outfile << Path::getInstance().getAppAbsPath(dir) << ":" << std::endl;
+    std::vector<std::string> directories;
     for (auto it = page->files.begin(); it != page->files.end(); it++)
     {
-        std::string abs_path = dir + "/" + (*it)->getFileName();
-        std::ofstream outfile(file, std::ofstream::binary);
-        outfile << Path::getInstance().getAppAbsPath(dir) << ":" << std::endl;
-        std::vector<std::string> directories;
-        if ((*it)->getFileName() != "." && (*it)->getFileName() != "..")
-        {
+        if ((*it)->getFileName() != "." && (*it)->getFileName() != ".." && (*it)->getFileName()[0] != '.')
+        {   
             outfile << (*it)->getFileName() << " ";
             //syslog(0, "In search search file path %s", abs_path.c_str());
-            if ((*it)->getFileType() != 'd')
+            if ((*it)->getFileType() == 'd')
             {
+                std::string abs_path = dir + "/" + (*it)->getFileName();
                 directories.push_back(abs_path);
             }
         }
-        for (auto it = directories.begin(); it != directories.end(); it++)
-        {
-            snapshot(abs_path, file);
-        }
+    }
+    outfile << "\n";
+    outfile << "\n";
+    outfile.close();
+    for (auto it = directories.begin(); it != directories.end(); it++)
+    {
+        snapshot(*it, file);
     }
 }

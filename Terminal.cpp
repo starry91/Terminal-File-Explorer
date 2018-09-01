@@ -26,38 +26,62 @@ void Terminal::DrawView(page_Sptr page)
     int offset = (rows - 2 > (page->files.size() - begin)) ? page->files.size() - begin : rows - 2;
 
     std::cout << "\033[1;1H"; //Move cursor to start
-    auto& path = Path::getInstance();
-    std::cout << "Current Directory: " << path.getAppAbsPath(page->cwd + "/");
-    int cursor_row = 2;
-    for (int i = begin; i < begin + offset; i++)
+    if (this->search_flag == 0)
     {
-        std::cout << "\033[" << cursor_row << ";0H";
-        std::cout << page->files[i]->getPermission() << " ";
-        std::cout << page->files[i]->getUserName() << " ";
-        std::cout << page->files[i]->getGroupName() << " ";
-        std::cout << std::right << std::setw(6) << page->files[i]->getSize() << " ";
-        std::cout << page->files[i]->getLastModified();
-        if (highlight_index == i)
+        auto &path = Path::getInstance();
+        std::cout << "Current Directory: " << path.getAppAbsPath(page->cwd + "/");
+        int cursor_row = 2;
+        for (int i = begin; i < begin + offset; i++)
         {
-            std::cout << "\033[30;46m " << page->files[i]->getFileName() << " "
-                      << "\033[0m ";
-            //std::cout << state.start_index << " " << state.highlight_index << " " << state.files.size();
-        }
-        else
-        {
-            if (page->files[i]->getFileType() == 'd')
-                std::cout << "\033[35;10m " << page->files[i]->getFileName() << " \033[0m";
+            std::cout << "\033[" << cursor_row << ";0H";
+            std::cout << page->files[i]->getPermission() << " ";
+            std::cout << page->files[i]->getUserName() << " ";
+            std::cout << page->files[i]->getGroupName() << " ";
+            std::cout << std::right << std::setw(6) << page->files[i]->getSize() << " ";
+            std::cout << page->files[i]->getLastModified();
+            if (highlight_index == i)
+            {
+                std::cout << "\033[30;46m " << page->files[i]->getFileName() << " "
+                          << "\033[0m ";
+                //std::cout << state.start_index << " " << state.highlight_index << " " << state.files.size();
+            }
             else
-                std::cout << " " << page->files[i]->getFileName() << " ";
+            {
+                if (page->files[i]->getFileType() == 'd')
+                    std::cout << "\033[35;10m " << page->files[i]->getFileName() << " \033[0m";
+                else
+                    std::cout << " " << page->files[i]->getFileName() << " ";
+            }
+            std::cout << std::flush;
+            cursor_row += 1;
+            //std::this_thread::sleep_for(std::chrono::seconds(1));
         }
-        std::cout << std::flush;
-        cursor_row += 1;
-        //std::this_thread::sleep_for(std::chrono::seconds(1));
+        syslog(0, "Mode: %d Rows: %d", (int)mode, rows);
+        if (this->mode == Mode::COMMAND)
+            std::cout << "\033[" << rows << ";0H"
+                      << ":" << std::flush;
     }
-    syslog(0, "Mode: %d Rows: %d", (int)mode, rows);
-    if (this->mode == Mode::COMMAND)
-        std::cout << "\033[" << rows << ";0H"
-                  << ":" << std::flush;
+    else
+    {
+        int cursor_row = 2;
+        for (int i = begin; i < begin + offset; i++)
+        {
+            std::cout << "\033[" << cursor_row << ";0H";
+            if (highlight_index == i)
+            {
+                std::cout << "\033[30;46m " << Path::getInstance().getAppAbsPath(page->files[i]->getFileName()) << " "
+                          << "\033[0m ";
+                //std::cout << state.start_index << " " << state.highlight_index << " " << state.files.size();
+            }
+            else
+            {
+                std::cout << " " << Path::getInstance().getAppAbsPath(page->files[i]->getFileName()) << " ";
+            }
+            std::cout << std::flush;
+            cursor_row += 1;
+            //std::this_thread::sleep_for(std::chrono::seconds(1));
+        }
+    }
 }
 
 void Terminal::DrawCommand(std::string cmd)

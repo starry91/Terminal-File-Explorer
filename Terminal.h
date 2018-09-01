@@ -20,6 +20,7 @@ class Terminal
     struct termios curr_term_state;
     struct termios orig_term_state;
     Mode mode;
+    int search_flag = 0;
 
     void DrawView(page_Sptr page);
     void DrawCommand(std::string);

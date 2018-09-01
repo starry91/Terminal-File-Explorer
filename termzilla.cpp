@@ -32,7 +32,7 @@ int main()
 	Terminal term;
 	char input;
 	term.switchToNormalMode(); //set non-canonical params
-
+	int search_mode = 0;
 	page_Sptr page = pageMgr.getCurrPage();
 	term.DrawView(page);
 	CommandHandler cmdHandler;
@@ -43,7 +43,8 @@ int main()
 	{
 		if (term.mode == Mode::NORMAL)
 		{
-			page_Sptr page = pageMgr.getCurrPage();
+			if (search_mode == 0)
+				page_Sptr page = pageMgr.getCurrPage();
 			syslog(0, "Input: %d", (int)input);
 			if (input == '\033')
 			{
@@ -60,10 +61,12 @@ int main()
 						page->scrollUp();
 						break;
 					case (int)Action::KEY_LEFT:
-						page = pageMgr.backward();
+						if (search_mode == 0)
+							page = pageMgr.backward();
 						break;
 					case (int)Action::KEY_RIGHT:
-						page = pageMgr.forward();
+						if (search_mode == 0)
+							page = pageMgr.forward();
 						break;
 					}
 				}
@@ -71,6 +74,11 @@ int main()
 			}
 			else if ((int)input == (int)Action::KEY_ENTER)
 			{
+				if (search_mode == 1)
+				{
+					search_mode = 0;
+					term.search_flag = 0;
+				}
 				page_Sptr new_page = page->enterDir();
 				if (new_page != NULL) //if opening a folder
 				{
@@ -86,19 +94,31 @@ int main()
 			else if ((int)input == (int)Action::KEY_BACKSPACE)
 			{
 				//syslog(0, "Hello Input: %d", (int)input);
-				page_Sptr new_page = page->gotoParent();
-				if (new_page != NULL) //if opening a folder
+				if (search_mode == 1)
 				{
-					int curr_index = pageMgr.getCurrStateIndex();
-					while (pageMgr.pageHistory.size() > curr_index + 1)
-						pageMgr.pop();
-					pageMgr.push(new_page);
+					search_mode = 0;
+					term.search_flag = 0;
 					page = pageMgr.getCurrPage();
 					term.DrawView(page);
+				}
+				else
+				{
+					page_Sptr new_page = page->gotoParent();
+					if (new_page != NULL) //if opening a folder
+					{
+						int curr_index = pageMgr.getCurrStateIndex();
+						while (pageMgr.pageHistory.size() > curr_index + 1)
+							pageMgr.pop();
+						pageMgr.push(new_page);
+						page = pageMgr.getCurrPage();
+						term.DrawView(page);
+					}
 				}
 			}
 			else if ((int)input == (int)Action::KEY_h)
 			{
+				term.search_flag = 0;
+				search_mode = 0;
 				page_Sptr new_page = page->gotoHome(pageMgr.getHomeDir());
 				int curr_index = pageMgr.getCurrStateIndex();
 				while (pageMgr.pageHistory.size() > curr_index + 1)
@@ -107,7 +127,7 @@ int main()
 				page = pageMgr.getCurrPage();
 				term.DrawView(page);
 			}
-			else if ((int)input == (int)Action::KEY_COLON)
+			else if (search_mode == 0 && (int)input == (int)Action::KEY_COLON)
 			{
 				term.DrawCommand("");
 				char buffer[1024];
@@ -204,8 +224,18 @@ int main()
 						{
 							std::vector<std::string> search_output;
 							cmdHandler.search(command_args[1], Path::getInstance().getSystemAbsPath("."), search_output);
+							page = std::make_shared<Page>(Page(search_output));
+							term.search_flag = 1;
+							search_mode = 1;
+							term.DrawView(page);
+							break;
 							for (auto it = search_output.begin(); it != search_output.end(); it++)
 								syslog(0, "search out: [%s]", (*it).c_str());
+						}
+						else if (translated_args[0] == "snapshot")
+						{
+							syslog(0, "Snapshot dir:out %s", translated_args[1].c_str());
+							cmdHandler.snapshot(translated_args[1], translated_args[2]);
 						}
 						term.eraseStatusBar();
 						term.DrawCommand("");
