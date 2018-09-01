@@ -21,6 +21,6 @@ public:
   std::shared_ptr<Page> gotoHome(std::string);
   };
 
-typedef std::shared_ptr<Page> page_Sptr;
+typedef std::shared_ptr<Page> page_Sptr;  
 
 #endif

@@ -144,3 +144,48 @@ page_Sptr CommandHandler::goToDir(std::string dir)
 {
     return std::make_shared<Page>(Page(dir));
 }
+
+void CommandHandler::search(std::string name, std::string dir, std::vector<std::string> &output)
+{
+    syslog(0, "In search search path: %s", dir.c_str());
+    auto page = std::make_shared<Page>(Page(dir));
+    for (auto it = page->files.begin(); it != page->files.end(); it++)
+    {
+        std::string abs_path = dir + "/" + (*it)->getFileName();
+        syslog(0, "In search search file path %s", abs_path.c_str());
+        if ((*it)->getFileName() == name)
+        {
+            output.push_back(abs_path);
+        }
+        else if ((*it)->getFileName() != "." && (*it)->getFileName() != ".." && (*it)->getFileType() == 'd')
+        {
+            search(name, abs_path, output);
+        }
+    }
+}
+
+void CommandHandler::snapshot(std::string dir, std::string file)
+{
+    //syslog(0, "In search search path: %s", dir.c_str());
+    auto page = std::make_shared<Page>(Page(dir));
+    for (auto it = page->files.begin(); it != page->files.end(); it++)
+    {
+        std::string abs_path = dir + "/" + (*it)->getFileName();
+        std::ofstream outfile(file, std::ofstream::binary);
+        outfile << Path::getInstance().getAppAbsPath(dir) << ":" << std::endl;
+        std::vector<std::string> directories;
+        if ((*it)->getFileName() != "." && (*it)->getFileName() != "..")
+        {
+            outfile << (*it)->getFileName() << " ";
+            //syslog(0, "In search search file path %s", abs_path.c_str());
+            if ((*it)->getFileType() != 'd')
+            {
+                directories.push_back(abs_path);
+            }
+        }
+        for (auto it = directories.begin(); it != directories.end(); it++)
+        {
+            snapshot(abs_path, file);
+        }
+    }
+}

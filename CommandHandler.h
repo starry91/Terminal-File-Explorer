@@ -16,6 +16,8 @@ class CommandHandler
     void rename(std::string old_name, std::string new_name);
     void createFile(std::string name, std::string dest_dir);
     void createDir(std::string name, std::string dest_dir);
+    void search(std::string name, std::string dir, std::vector<std::string>& output);
+    void snapshot(std::string dir, std::string file);
     page_Sptr goToDir(std::string dir);
 };
 

@@ -16,7 +16,7 @@ std::string Path::getHomePath()
     return this->HOME_APPLICATION;
 };
 
-Path & Path::getInstance()
+Path &Path::getInstance()
 {
     static Path path;
     syslog(0, "Address: %x", &path);
@@ -55,5 +55,8 @@ std::string Path::getAppAbsPath(std::string dir)
 
 std::string Path::getSystemAbsPath(std::string dir)
 {
-    return this->HOME_APPLICATION + dir;
+    if (dir[0] != '/')
+        return this->HOME_APPLICATION + "/" + dir;
+    else
+        return this->HOME_APPLICATION + dir;
 }

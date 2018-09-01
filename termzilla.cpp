@@ -200,12 +200,19 @@ int main()
 							page = pageMgr.getCurrPage();
 							term.DrawView(page);
 						}
+						else if (translated_args[0] == "search")
+						{
+							std::vector<std::string> search_output;
+							cmdHandler.search(command_args[1], Path::getInstance().getSystemAbsPath("."), search_output);
+							for (auto it = search_output.begin(); it != search_output.end(); it++)
+								syslog(0, "search out: [%s]", (*it).c_str());
+						}
 						term.eraseStatusBar();
 						term.DrawCommand("");
 						std::memset(buffer, 0, 1024);
 						start = 0;
 					}
-					else if((int)input == (int)Action::KEY_ESC)
+					else if ((int)input == (int)Action::KEY_ESC)
 						break;
 				}
 				term.DrawView(page);
