@@ -24,6 +24,7 @@ std::vector<std::string> CommandParser::translateArgs(std::vector<std::string> a
     auto path_obj = Path::getInstance();
     for (int start = 0; start < args.size(); start++)
     {
+        syslog(0, "Loop: [%s]", args[start].c_str());
         if (start == 0)
         {
             processed_output.push_back(args[start]);
@@ -39,6 +40,8 @@ std::vector<std::string> CommandParser::translateArgs(std::vector<std::string> a
         }
         else if (args[start][0] == '/')
         {
+            if(args[start].length() >= path_obj.getHomePath().length() && args[start].substr(0,path_obj.getHomePath().length()) == path_obj.getHomePath())
+                processed_output.push_back(args[start]);
             if (args[start].length() > 1)
                 processed_output.push_back(path_obj.getHomePath() + args[start]);
             else
@@ -55,6 +58,8 @@ std::vector<std::string> CommandParser::translateArgs(std::vector<std::string> a
         }
         else
         {
+            syslog(0, "Abcsda");
+            syslog(0, "Arg6: [%s]", (page->cwd.c_str()));
             processed_output.push_back(page->cwd + "/" + args[start]);
             //syslog(0, "Arg6: [%s]", (page->cwd + "/" + command.substr(i, start - i)).c_str());
         }

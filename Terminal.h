@@ -24,12 +24,16 @@ class Terminal
 
     void DrawView(page_Sptr page);
     void DrawCommand(std::string);
+    void DrawError(std::string err);
     void scrollDown();
     void scrollUp();
     void enterDir();
     void eraseStatusBar();
+    void eraseErrorBar();
     int switchToNormalMode();
     int switchToCommandMode();
+    void disableCursor();
+    void enableCursor();
 };
 
 #endif

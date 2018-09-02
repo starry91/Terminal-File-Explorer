@@ -1,6 +1,6 @@
 PROJECT_ROOT = $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
-OBJS =  termzilla.o Terminal.o pageManager.o page.o file.o path.o CommandParser.o CommandHandler.o
+OBJS =  termzilla.o Terminal.o pageManager.o page.o file.o path.o CommandParser.o CommandHandler.o error.o
 CFLAGS = -I.
 LDIR = -L.
 CFLAGS += -g

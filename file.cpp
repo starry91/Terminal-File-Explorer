@@ -6,7 +6,7 @@
 #include <dirent.h>
 #include <pwd.h>
 #include <vector>
-
+#include "error.h"
 //find permissions
 char *permissions(struct stat st)
 {
@@ -26,7 +26,8 @@ char *permissions(struct stat st)
     return mode;
 }
 
-File::File(std::string path, int search_mode) {
+File::File(std::string path, int search_mode)
+{
     this->dir_entry = path;
 }
 
@@ -44,14 +45,18 @@ File::File(std::string file)
     }
     this->dir_entry = tokens[tokens.size() - 1];
     if (stat(file.c_str(), &fileStat))
-        perror("Error getting file stat");
+    {
+        throw Error("Invalid Args: Cannot find file");
+    }
 }
 
 File::File(std::string path, std::string dir_entry)
 {
     this->dir_entry = dir_entry;
     if (stat((path + "/" + dir_entry).c_str(), &fileStat))
-        perror("Error getting file stat");
+    {
+        throw Error("Invalid Args: Cannot find file");
+    }
 }
 
 std::string File::getGroupName()
@@ -97,6 +102,7 @@ std::string File::getUserName()
     return std::string(getpwuid(this->fileStat.st_uid)->pw_name);
 }
 
-mode_t File::getFilePerms() {
+mode_t File::getFilePerms()
+{
     return this->fileStat.st_mode;
 }

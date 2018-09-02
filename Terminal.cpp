@@ -22,8 +22,8 @@ void Terminal::DrawView(page_Sptr page)
     int col = ws.ws_col;
 
     int highlight_index = page->highlight_index;
-    int begin = (highlight_index > rows - 3) ? (highlight_index - rows + 3) : 0;
-    int offset = (rows - 2 > (page->files.size() - begin)) ? page->files.size() - begin : rows - 2;
+    int begin = (highlight_index > rows - 4) ? (highlight_index - rows + 4) : 0;
+    int offset = (rows - 3 > (page->files.size() - begin)) ? page->files.size() - begin : rows - 3;
 
     std::cout << "\033[1;1H"; //Move cursor to start
     if (this->search_flag == 0)
@@ -57,9 +57,9 @@ void Terminal::DrawView(page_Sptr page)
             //std::this_thread::sleep_for(std::chrono::seconds(1));
         }
         syslog(0, "Mode: %d Rows: %d", (int)mode, rows);
-        if (this->mode == Mode::COMMAND)
-            std::cout << "\033[" << rows << ";0H"
-                      << ":" << std::flush;
+        // if (this->mode == Mode::COMMAND)
+        //     std::cout << "\033[" << rows << ";0H"
+        //               << ":" << std::flush;
     }
     else
     {
@@ -94,7 +94,27 @@ void Terminal::DrawCommand(std::string cmd)
     std::cout << ":" << cmd << std::flush;
 }
 
+void Terminal::DrawError(std::string err)
+{
+    struct winsize ws;
+    ioctl(STDIN_FILENO, TIOCGWINSZ, &ws);
+    int rows = ws.ws_row;
+    int col = ws.ws_col;
+    this->eraseErrorBar();
+    std::cout << "Error:" << err << std::flush;
+}
+
 void Terminal::eraseStatusBar()
+{
+    struct winsize ws;
+    ioctl(STDIN_FILENO, TIOCGWINSZ, &ws);
+    int rows = ws.ws_row;
+    int col = ws.ws_col;
+    std::cout << "\033[" << rows - 1 << ";0H"
+              << "\033[K" << std::flush;
+}
+
+void Terminal::eraseErrorBar()
 {
     struct winsize ws;
     ioctl(STDIN_FILENO, TIOCGWINSZ, &ws);
@@ -140,4 +160,13 @@ int Terminal::switchToCommandMode()
     }
     this->mode = Mode::COMMAND;
     return 0;
+}
+
+void Terminal::disableCursor()
+{
+    std::cout << "\e[?25l" << std::flush;
+}
+void Terminal::enableCursor()
+{
+    std::cout << "\e[?25h" << std::flush;
 }
