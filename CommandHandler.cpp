@@ -74,7 +74,7 @@ void CommandHandler::copyDir(std::string source_dir, std::string dest_dir)
         if (source_dir == dest_dir)
             throw Error("source and destination are the same file");
     }
-    else if(mkdir(dest_dir.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) < 0)
+    else if (mkdir(dest_dir.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) < 0)
     {
         throw Error("Directory already exits ");
     }
@@ -121,30 +121,37 @@ void CommandHandler::delFile(std::string file)
 {
     if (unlink(file.c_str()) < 0)
     {
-        throw Error("Invalid Args: Error deleting file");
+        throw Error("File does not exist");
     }
 }
 
 void CommandHandler::delDir(std::string source_dir)
 {
-    auto page = std::make_shared<Page>(Page(source_dir));
-    File folder = File(source_dir);
-    for (auto it = page->files.begin(); it != page->files.end(); it++)
+    try
     {
-        std::string name = (*it)->getFileName();
-        if ((*it)->getFileType() == 'd' && name != "." && name != "..")
+        auto page = std::make_shared<Page>(Page(source_dir));
+        File folder = File(source_dir);
+        for (auto it = page->files.begin(); it != page->files.end(); it++)
         {
-            delDir(source_dir + "/" + name);
+            std::string name = (*it)->getFileName();
+            if ((*it)->getFileType() == 'd' && name != "." && name != "..")
+            {
+                delDir(source_dir + "/" + name);
+            }
+            else if (name != "." && name != "..")
+            {
+                delFile(source_dir + "/" + name);
+            }
         }
-        else if (name != "." && name != "..")
+        if (rmdir(source_dir.c_str()) < 0)
         {
-            delFile(source_dir + "/" + name);
-        }
+            throw Error("Invalid Args: Error deleting dir ");
+        };
     }
-    if (rmdir(source_dir.c_str()) < 0)
+    catch (Error e)
     {
-        throw Error("Invalid Args: Error deleting dir ");
-    };
+        throw Error("Directory does not exist");
+    }
 }
 
 void CommandHandler::rename(std::string old_name, std::string new_name)
@@ -153,7 +160,7 @@ void CommandHandler::rename(std::string old_name, std::string new_name)
     syslog(0, "Rename new %s", new_name.c_str());
     if (std::rename(old_name.c_str(), new_name.c_str()) < 0)
     {
-        throw Error("Invalid Args: Error renaming file ");
+        throw Error("Source file does not exist");
     }
 }
 
@@ -167,12 +174,19 @@ void CommandHandler::createFile(std::string name, std::string dest_dir)
     std::ofstream out((dest_dir + "/" + name));
     if (out.fail())
     {
-        throw Error("Invalid Args: Cannot create file ");
+        throw Error("Destination directory does not exist");
     }
 }
 
 void CommandHandler::createDir(std::string name, std::string dest_dir)
 {
+    try
+    {
+        auto page = std::make_shared<Page>(Page(dest_dir));
+    }
+    catch (Error e) {
+        throw Error("Destination directory does not exist");
+    }
     if (mkdir((dest_dir + "/" + name).c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) < 0)
     {
         throw Error("Directory already exits ");
@@ -181,25 +195,40 @@ void CommandHandler::createDir(std::string name, std::string dest_dir)
 
 page_Sptr CommandHandler::goToDir(std::string dir)
 {
-    return std::make_shared<Page>(Page(dir));
+    page_Sptr page;
+    try
+    {
+        std::make_shared<Page>(Page(dir));
+    }
+    catch (Error e)
+    {
+        throw Error("Directory does not exist");
+    }
+    return page;
 }
 
 void CommandHandler::search(std::string name, std::string dir, std::vector<std::string> &output)
 {
-    syslog(0, "In search search path: %s", dir.c_str());
-    auto page = std::make_shared<Page>(Page(dir));
+    //syslog(0, "In search search path: %s", dir.c_str());
+    page_Sptr page;
+    try
+    {
+        page = std::make_shared<Page>(Page(dir));
+    }
+    catch (Error e)
+    {
+        throw Error("Directory does not exist");
+    }
     for (auto it = page->files.begin(); it != page->files.end(); it++)
     {
-        std::string abs_path;
-        syslog(0, "In search search file path %s", abs_path.c_str());
+        std::string abs_path = dir + "/" + (*it)->getFileName();
+        //syslog(0, "In search search file path %s", abs_path.c_str());
         if ((*it)->getFileName() == name)
         {
-            abs_path = dir;
             output.push_back(abs_path);
         }
-        else if ((*it)->getFileName() != "." && (*it)->getFileName() != ".." && (*it)->getFileType() == 'd')
+        if ((*it)->getFileName() != "." && (*it)->getFileName() != ".." && (*it)->getFileType() == 'd')
         {
-            abs_path = dir + "/" + (*it)->getFileName();
             search(name, abs_path, output);
         }
     }
@@ -208,11 +237,19 @@ void CommandHandler::search(std::string name, std::string dir, std::vector<std::
 void CommandHandler::snapshot(std::string dir, std::string file)
 {
     //syslog(0, "Snapshot: dir %s  file %s", dir.c_str(), file.c_str());
-    auto page = std::make_shared<Page>(Page(dir));
+    page_Sptr page;
+    try
+    {
+        page = std::make_shared<Page>(Page(dir));
+    }
+    catch (Error e)
+    {
+        throw Error("Given Directory does not exist");
+    }
     std::ofstream outfile(file, std::ofstream::binary | std::ofstream::out | std::ofstream::app);
     if (outfile.fail())
     {
-        throw Error("Invalid Args: Cannot create file ");
+        throw Error("Cannot create destination file");
     }
     outfile << "." << Path::getInstance().getAppAbsPath(dir) << ":" << std::endl;
     std::vector<std::string> directories;

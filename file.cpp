@@ -7,24 +7,6 @@
 #include <pwd.h>
 #include <vector>
 #include "error.h"
-//find permissions
-char *permissions(struct stat st)
-{
-    char *mode = (char *)malloc(sizeof(char) * 10 + 1);
-    mode_t perm = st.st_mode;
-    mode[0] = (perm & S_IFDIR) ? 'd' : '-';
-    mode[1] = (perm & S_IRUSR) ? 'r' : '-';
-    mode[2] = (perm & S_IWUSR) ? 'w' : '-';
-    mode[3] = (perm & S_IXUSR) ? 'x' : '-';
-    mode[4] = (perm & S_IRGRP) ? 'r' : '-';
-    mode[5] = (perm & S_IWGRP) ? 'w' : '-';
-    mode[6] = (perm & S_IXGRP) ? 'x' : '-';
-    mode[7] = (perm & S_IROTH) ? 'r' : '-';
-    mode[8] = (perm & S_IWOTH) ? 'w' : '-';
-    mode[9] = (perm & S_IXOTH) ? 'x' : '-';
-    mode[10] = '\0';
-    return mode;
-}
 
 File::File(std::string path, int search_mode)
 {
@@ -44,16 +26,38 @@ File::File(std::string file)
         }
     }
     this->dir_entry = tokens[tokens.size() - 1];
+    if (lstat(file.c_str(), &fileStat))
+    {
+        throw Error("Invalid Args: Cannot find file");
+    }
+}
+
+File::File(std::string file, char stat_type)
+{
+    std::vector<std::string> tokens;
+    int prev = 0;
+    for (int i = 0; i <= file.length(); i++)
+    {
+        if (file[i] == '/' || i == file.length())
+        {
+            tokens.push_back(file.substr(prev, i - prev));
+            prev = i + 1;
+        }
+    }
+    this->dir_entry = tokens[tokens.size() - 1];
     if (stat(file.c_str(), &fileStat))
     {
         throw Error("Invalid Args: Cannot find file");
     }
 }
 
+
+
+
 File::File(std::string path, std::string dir_entry)
 {
     this->dir_entry = dir_entry;
-    if (stat((path + "/" + dir_entry).c_str(), &fileStat))
+    if (lstat((path + "/" + dir_entry).c_str(), &fileStat))
     {
         throw Error("Invalid Args: Cannot find file");
     }
@@ -67,7 +71,7 @@ std::string File::getPermission()
 {
     char *mode = (char *)malloc(sizeof(char) * 10 + 1);
     mode_t perm = this->fileStat.st_mode;
-    mode[0] = (perm & S_IFDIR) ? 'd' : '-';
+    mode[0] = (perm & S_IFDIR) ? 'd' : ((perm & S_IFMT) == S_IFLNK ? 'l' : '-');
     mode[1] = (perm & S_IRUSR) ? 'r' : '-';
     mode[2] = (perm & S_IWUSR) ? 'w' : '-';
     mode[3] = (perm & S_IXUSR) ? 'x' : '-';
@@ -90,7 +94,7 @@ std::string File::getLastModified()
 }
 char File::getFileType()
 {
-    return (this->getPermission().c_str()[0] == 'd') ? 'd' : 'f';
+    return (this->getPermission().c_str()[0] == 'd') ? 'd' : ((this->getPermission().c_str()[0] == 'f') ? 'f' : 'l');
 }
 std::string File::getFileName()
 {

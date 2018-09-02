@@ -11,18 +11,20 @@ class File
 {
   struct stat fileStat;
   std::string dir_entry;
-  public:
-    std::string getUserName();
-    std::string getGroupName();
-    std::string getPermission();
-    mode_t getFilePerms();
-    size_t getSize();
-    std::string getLastModified();
-    char getFileType();
-    std::string getFileName();
-    File(std::string dir, std::string name);
-    File(std::string path);
-    File(std::string path, int);
+
+public:
+  std::string getUserName();
+  std::string getGroupName();
+  std::string getPermission();
+  mode_t getFilePerms();
+  size_t getSize();
+  std::string getLastModified();
+  char getFileType();
+  std::string getFileName();
+  File(std::string dir, std::string name);
+  File(std::string path);
+  File(std::string path, int);
+  File(std::string file, char stat_type);
 };
 
 typedef std::shared_ptr<File> file_Sptr;

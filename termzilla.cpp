@@ -23,6 +23,7 @@ enum class Action
 	KEY_h = 104,
 	KEY_COLON = 58,
 	KEY_ESC = 27,
+	KEY_q = 113,
 };
 
 int main()
@@ -48,7 +49,6 @@ int main()
 		{
 			if (search_mode == 0)
 				page = pageMgr.getCurrPage();
-			syslog(0, "Input: %d", (int)input[0]);
 			if (read_byte_count == 3 && input[0] == '\033')
 			{
 				//read(0, &input, 1);
@@ -77,11 +77,6 @@ int main()
 			}
 			else if (read_byte_count == 1 && (int)input[0] == (int)Action::KEY_ENTER)
 			{
-				if (search_mode == 1)
-				{
-					search_mode = 0;
-					term.search_flag = 0;
-				}
 				page_Sptr new_page = page->enterDir();
 				if (new_page != NULL) //if opening a folder
 				{
@@ -90,13 +85,17 @@ int main()
 						pageMgr.pop();
 					pageMgr.push(new_page);
 					page = pageMgr.getCurrPage();
+					if (search_mode == 1)
+					{
+						search_mode = 0;
+						term.search_flag = 0;
+					}
 					term.DrawView(page);
 				}
 				//std::cout << "\033[1C" << std::flush;
 			}
 			else if (read_byte_count == 1 && (int)input[0] == (int)Action::KEY_BACKSPACE)
 			{
-				//syslog(0, "Hello Input: %d", (int)input);
 				if (search_mode == 1)
 				{
 					search_mode = 0;
@@ -143,12 +142,8 @@ int main()
 				{
 					try
 					{
-						syslog(0, "Page in while cwd: [%s]", page->cwd.c_str());
 						std::memset(input, 0, 10);
-						syslog(0, "Testing");
 						int byte_count = read(0, input, 5);
-						//input = getchar();
-						syslog(0, "Input: %d %d", input[0], '\n');
 						if (byte_count == 1 && input[0] != '\n' && ((int)input[0] != (int)Action::KEY_ESC))
 						{
 							if ((int)input[0] != (int)Action::KEY_BACKSPACE)
@@ -197,7 +192,7 @@ int main()
 							}
 							else if (translated_args[0] == "rename")
 							{
-								if (command_args.size() != 2)
+								if (command_args.size() != 3)
 								{
 									throw Error("Invalid Arguments");
 								}
@@ -320,6 +315,12 @@ int main()
 				}
 				term.DrawView(page);
 				term.disableCursor();
+			}
+			else if (read_byte_count == 1 && search_mode == 0 && (int)input[0] == (int)Action::KEY_q) {
+				term.switchToCommandMode();
+				term.enableCursor();
+				std::cout << "\e[?1049l" << std::flush;
+				return (0);
 			}
 		}
 		std::memset(input, 0, 10);

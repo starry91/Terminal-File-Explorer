@@ -17,7 +17,7 @@ Page::Page(std::string path = NULL)
     dp = opendir(path.c_str());
     if (dp == NULL)
     {
-        throw Error("Invalid Args: Invalid directory");
+        throw Error("Invalid Args: " + Path::getInstance().getAppAbsPath(path) + " does not exist");
     }
     //syslog(0, "Page constructor: %s", path.c_str());
     struct dirent *entry;
@@ -53,14 +53,32 @@ page_Sptr Page::enterDir()
 {
     auto file = this->files[this->highlight_index];
     auto path_obj = Path::getInstance();
-    std::string search_path;
+    std::string search_path = path_obj.getSystemAbsPath(file->getFileName());
+    syslog(0, "Enter Dir: [%s] file type: [%c]", search_path.c_str(), File(search_path).getFileType());
     if (this->cwd == "search")
     {
-        search_path = file->getFileName();
-        syslog(0, "Opening searh page: %s", search_path.c_str());
-        return std::make_shared<Page>(Page((char *)search_path.c_str()));
+        if (File(search_path,'n').getFileType() == 'd')
+        {
+            syslog(0, "Opening searh page: %s", search_path.c_str());
+            return std::make_shared<Page>(Page((char *)search_path.c_str()));
+        }
+        else //if (File(search_path).getFileType() == 'f')
+        {
+            int pid = fork();
+            if (pid == 0)
+            { //child
+                //char * const args[3] = {"xdg-open", (char*) (this->cwd + "/" + file->name).c_str(), NULL};
+                //execvp ("/usr/bin/xdg-open", args);
+                execl("/usr/bin/xdg-open", "xdg-open", search_path.c_str(), NULL);
+            }
+            else
+            {
+                int err = waitpid(-1, NULL, WUNTRACED);
+                syslog(0, "Waiting: %d", err);
+            }
+        }
     }
-    if (file->getFileType() == 'd')
+    else if (file->getFileType() == 'd')
     {
         std::string path;
         if (file->getFileName() == "..")
