@@ -182,6 +182,9 @@ int main()
 							{
 								syslog(0, "Copy Command Entered");
 								cmdHandler.copyFiles(translated_args);
+								pageMgr.updateCurrPage();
+								page = pageMgr.getCurrPage();
+								term.DrawView(page);
 							}
 							else if (translated_args[0] == "move")
 							{
@@ -209,7 +212,7 @@ int main()
 								{
 									throw Error("Invalid Arguments");
 								}
-								cmdHandler.createFile(translated_args[1], translated_args[2]);
+								cmdHandler.createFile(command_args[1], translated_args[2]);
 								pageMgr.updateCurrPage();
 								page = pageMgr.getCurrPage();
 								term.DrawView(page);
@@ -220,7 +223,7 @@ int main()
 								{
 									throw Error("Invalid Arguments");
 								}
-								cmdHandler.createDir(translated_args[1], translated_args[2]);
+								cmdHandler.createDir(command_args[1], translated_args[2]);
 								pageMgr.updateCurrPage();
 								page = pageMgr.getCurrPage();
 								term.DrawView(page);
@@ -268,7 +271,7 @@ int main()
 									throw Error("Invalid Arguments");
 								}
 								std::vector<std::string> search_output;
-								cmdHandler.search(command_args[1], Path::getInstance().getSystemAbsPath("."), search_output);
+								cmdHandler.search(command_args[1], Path::getInstance().getSystemAbsPath(page->cwd), search_output);
 								if (search_output.size() == 0)
 								{
 									throw Error("No search results found");

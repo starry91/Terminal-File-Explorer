@@ -101,7 +101,7 @@ void Terminal::DrawError(std::string err)
     int rows = ws.ws_row;
     int col = ws.ws_col;
     this->eraseErrorBar();
-    std::cout << "Error:" << err << std::flush;
+    std::cout << "Error: " << err << std::flush;
 }
 
 void Terminal::eraseStatusBar()

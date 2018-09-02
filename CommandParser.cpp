@@ -25,7 +25,7 @@ std::vector<std::string> CommandParser::getArgs(std::string command)
     std::memset(buff, 0, 1024);
     for (int start = 0; start <= command.length(); start++)
     {
-        if (start == command.length())
+        if (start == command.length() && buff_index > 0)
         {
             buff[buff_index] = 0;
             res.push_back(std::string(buff));

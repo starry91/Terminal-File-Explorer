@@ -20,6 +20,11 @@ void CommandHandler::copyFile(std::string file, std::string dir)
     syslog(0, "FileName: %s", File(file).getFileName().c_str());
     syslog(0, "Source File: %s", file.c_str());
     syslog(0, "Dest File: %s", dest_file.c_str());
+    struct stat buffer;
+    if (stat(dest_file.c_str(), &buffer) == 0)
+    {
+        throw Error("file " + File(file).getFileName() + " already exits");
+    }
     std::ifstream input(file, std::ios::binary);
     if (input.fail())
     {
@@ -66,7 +71,7 @@ void CommandHandler::copyDir(std::string source_dir, std::string dest_dir)
     dest_dir = dest_dir + "/" + folder.getFileName();
     if (mkdir(dest_dir.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) < 0)
     {
-        throw Error("Invalid Args: Error creating dir");
+        throw Error("Directory already exits ");
     }
 
     for (auto it = page->files.begin(); it != page->files.end(); it++)
@@ -149,7 +154,12 @@ void CommandHandler::rename(std::string old_name, std::string new_name)
 
 void CommandHandler::createFile(std::string name, std::string dest_dir)
 {
-    std::ofstream out((dest_dir + "/" + File(name).getFileName()));
+    std::ofstream out((dest_dir + "/" + name));
+    struct stat buffer;
+    if (stat((dest_dir + "/" + name).c_str(), &buffer) == 0)
+    {
+        throw Error("file " + name + " already exits");
+    }
     if (out.fail())
     {
         throw Error("Invalid Args: Cannot create file ");
@@ -158,9 +168,9 @@ void CommandHandler::createFile(std::string name, std::string dest_dir)
 
 void CommandHandler::createDir(std::string name, std::string dest_dir)
 {
-    if (mkdir((dest_dir + "/" + File(name).getFileName()).c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) < 0)
+    if (mkdir((dest_dir + "/" + name).c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) < 0)
     {
-        throw Error("Invalid Args: Cannot create dir ");
+        throw Error("Directory already exits ");
     }
 }
 
@@ -171,12 +181,12 @@ page_Sptr CommandHandler::goToDir(std::string dir)
 
 void CommandHandler::search(std::string name, std::string dir, std::vector<std::string> &output)
 {
-    //syslog(0, "In search search path: %s", dir.c_str());
+    syslog(0, "In search search path: %s", dir.c_str());
     auto page = std::make_shared<Page>(Page(dir));
     for (auto it = page->files.begin(); it != page->files.end(); it++)
     {
         std::string abs_path;
-        //syslog(0, "In search search file path %s", abs_path.c_str());
+        syslog(0, "In search search file path %s", abs_path.c_str());
         if ((*it)->getFileName() == name)
         {
             abs_path = dir;
@@ -199,7 +209,7 @@ void CommandHandler::snapshot(std::string dir, std::string file)
     {
         throw Error("Invalid Args: Cannot create file ");
     }
-    outfile << Path::getInstance().getAppAbsPath(dir) << ":" << std::endl;
+    outfile << "." << Path::getInstance().getAppAbsPath(dir) << ":" << std::endl;
     std::vector<std::string> directories;
     for (auto it = page->files.begin(); it != page->files.end(); it++)
     {

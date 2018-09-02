@@ -47,8 +47,10 @@ std::string Path::getAppAbsPath(std::string dir)
 {
 
     syslog(0, "Path: %s Home: %s", dir.c_str(), this->HOME_APPLICATION.c_str());
-    if (dir.length() >= this->HOME_APPLICATION.length() && dir.substr(0, this->HOME_APPLICATION.length()) == this->HOME_APPLICATION)
+    if (dir.length() > this->HOME_APPLICATION.length() && dir.substr(0, this->HOME_APPLICATION.length()) == this->HOME_APPLICATION)
         return dir.substr(this->HOME_APPLICATION.length(), dir.length() - this->HOME_APPLICATION.length());
+    if (dir.length() == this->HOME_APPLICATION.length() && dir.substr(0, this->HOME_APPLICATION.length()) == this->HOME_APPLICATION)
+        return "/";
     else if (dir.length() >= this->HOME_APPLICATION.length())
         return dir;
     else
