@@ -20,10 +20,9 @@ void CommandHandler::copyFile(std::string file, std::string dir)
     syslog(0, "FileName: %s", File(file).getFileName().c_str());
     syslog(0, "Source File: %s", file.c_str());
     syslog(0, "Dest File: %s", dest_file.c_str());
-    struct stat buffer;
-    if (stat(dest_file.c_str(), &buffer) == 0)
+    if (file == dest_file)
     {
-        throw Error("file " + File(file).getFileName() + " already exits");
+        throw Error("cannot copy " + File(file).getFileName() + " to itself");
     }
     std::ifstream input(file, std::ios::binary);
     if (input.fail())
@@ -69,7 +68,13 @@ void CommandHandler::copyDir(std::string source_dir, std::string dest_dir)
     auto page = std::make_shared<Page>(Page(source_dir));
     File folder = File(source_dir);
     dest_dir = dest_dir + "/" + folder.getFileName();
-    if (mkdir(dest_dir.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) < 0)
+    struct stat buffer;
+    if (stat((dest_dir).c_str(), &buffer) == 0)
+    {
+        if (source_dir == dest_dir)
+            throw Error("source and destination are the same file");
+    }
+    else if(mkdir(dest_dir.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) < 0)
     {
         throw Error("Directory already exits ");
     }
@@ -154,12 +159,12 @@ void CommandHandler::rename(std::string old_name, std::string new_name)
 
 void CommandHandler::createFile(std::string name, std::string dest_dir)
 {
-    std::ofstream out((dest_dir + "/" + name));
     struct stat buffer;
     if (stat((dest_dir + "/" + name).c_str(), &buffer) == 0)
     {
         throw Error("file " + name + " already exits");
     }
+    std::ofstream out((dest_dir + "/" + name));
     if (out.fail())
     {
         throw Error("Invalid Args: Cannot create file ");
