@@ -19,7 +19,7 @@ Page::Page(std::string path = NULL)
     {
         throw Error("Invalid Args: Invalid directory");
     }
-    syslog(0, "Page constructor: %s", path.c_str());
+    //syslog(0, "Page constructor: %s", path.c_str());
     struct dirent *entry;
     while ((entry = readdir(dp)))
         this->files.push_back(std::make_shared<File>(File(path, std::string(entry->d_name))));

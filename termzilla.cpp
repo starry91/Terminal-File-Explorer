@@ -168,6 +168,10 @@ int main()
 						{
 							syslog(0, "Buffer: [%s]", buffer);
 							std::vector<std::string> command_args = cmdParser.getArgs(std::string(buffer));
+							if (command_args.size() <= 1)
+							{
+								throw Error("No Arguments");
+							}
 							for (auto it = command_args.begin(); it != command_args.end(); it++)
 								syslog(0, "Arg: [%s]", (*it).c_str());
 							syslog(0, "Page cwd: [%s]", page->cwd.c_str());
@@ -190,6 +194,10 @@ int main()
 							}
 							else if (translated_args[0] == "rename")
 							{
+								if (command_args.size() != 2)
+								{
+									throw Error("Invalid Arguments");
+								}
 								cmdHandler.rename(translated_args[1], translated_args[2]);
 								pageMgr.updateCurrPage();
 								page = pageMgr.getCurrPage();
@@ -197,6 +205,10 @@ int main()
 							}
 							else if (translated_args[0] == "create_file")
 							{
+								if (command_args.size() != 3)
+								{
+									throw Error("Invalid Arguments");
+								}
 								cmdHandler.createFile(translated_args[1], translated_args[2]);
 								pageMgr.updateCurrPage();
 								page = pageMgr.getCurrPage();
@@ -204,6 +216,10 @@ int main()
 							}
 							else if (translated_args[0] == "create_dir")
 							{
+								if (command_args.size() != 3)
+								{
+									throw Error("Invalid Arguments");
+								}
 								cmdHandler.createDir(translated_args[1], translated_args[2]);
 								pageMgr.updateCurrPage();
 								page = pageMgr.getCurrPage();
@@ -211,6 +227,10 @@ int main()
 							}
 							else if (translated_args[0] == "delete_file")
 							{
+								if (command_args.size() != 2)
+								{
+									throw Error("Invalid Arguments");
+								}
 								cmdHandler.delFile(translated_args[1]);
 								pageMgr.updateCurrPage();
 								page = pageMgr.getCurrPage();
@@ -218,6 +238,10 @@ int main()
 							}
 							else if (translated_args[0] == "delete_dir")
 							{
+								if (command_args.size() != 2)
+								{
+									throw Error("Invalid Arguments");
+								}
 								cmdHandler.delDir(translated_args[1]);
 								pageMgr.updateCurrPage();
 								page = pageMgr.getCurrPage();
@@ -225,6 +249,10 @@ int main()
 							}
 							else if (translated_args[0] == "goto")
 							{
+								if (command_args.size() != 2)
+								{
+									throw Error("Invalid Arguments");
+								}
 								auto new_page = cmdHandler.goToDir(translated_args[1]);
 								int curr_index = pageMgr.getCurrStateIndex();
 								while (pageMgr.pageHistory.size() > curr_index + 1)
@@ -235,9 +263,14 @@ int main()
 							}
 							else if (translated_args[0] == "search")
 							{
+								if (command_args.size() != 2)
+								{
+									throw Error("Invalid Arguments");
+								}
 								std::vector<std::string> search_output;
 								cmdHandler.search(command_args[1], Path::getInstance().getSystemAbsPath("."), search_output);
-								if(search_output.size() == 0) {
+								if (search_output.size() == 0)
+								{
 									throw Error("No search results found");
 								}
 								page = std::make_shared<Page>(Page(search_output));
@@ -250,6 +283,10 @@ int main()
 							}
 							else if (translated_args[0] == "snapshot")
 							{
+								if (command_args.size() != 3)
+								{
+									throw Error("Invalid Arguments");
+								}
 								syslog(0, "Snapshot dir:out %s", translated_args[1].c_str());
 								cmdHandler.snapshot(translated_args[1], translated_args[2]);
 								pageMgr.updateCurrPage();

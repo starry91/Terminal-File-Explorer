@@ -171,12 +171,12 @@ page_Sptr CommandHandler::goToDir(std::string dir)
 
 void CommandHandler::search(std::string name, std::string dir, std::vector<std::string> &output)
 {
-    syslog(0, "In search search path: %s", dir.c_str());
+    //syslog(0, "In search search path: %s", dir.c_str());
     auto page = std::make_shared<Page>(Page(dir));
     for (auto it = page->files.begin(); it != page->files.end(); it++)
     {
         std::string abs_path;
-        syslog(0, "In search search file path %s", abs_path.c_str());
+        //syslog(0, "In search search file path %s", abs_path.c_str());
         if ((*it)->getFileName() == name)
         {
             abs_path = dir;
@@ -192,7 +192,7 @@ void CommandHandler::search(std::string name, std::string dir, std::vector<std::
 
 void CommandHandler::snapshot(std::string dir, std::string file)
 {
-    syslog(0, "Snapshot: dir %s  file %s", dir.c_str(), file.c_str());
+    //syslog(0, "Snapshot: dir %s  file %s", dir.c_str(), file.c_str());
     auto page = std::make_shared<Page>(Page(dir));
     std::ofstream outfile(file, std::ofstream::binary | std::ofstream::out | std::ofstream::app);
     if (outfile.fail())
