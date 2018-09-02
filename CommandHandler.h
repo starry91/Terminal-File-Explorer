@@ -4,6 +4,10 @@
 #include <vector>
 #include <string>
 #include "page.h"
+
+//Command handler to handle the command mode commands
+
+
 class CommandHandler
 {
   public:

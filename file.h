@@ -7,6 +7,9 @@
 #include <stdio.h>
 #include <memory>
 
+//File Class to store information related to a single file
+
+
 class File
 {
   struct stat fileStat;
@@ -21,10 +24,10 @@ public:
   std::string getLastModified();
   char getFileType();
   std::string getFileName();
-  File(std::string dir, std::string name);
+  File(std::string dir, std::string name);        //uses lstat
   File(std::string path);
-  File(std::string path, int);
-  File(std::string file, char stat_type);
+  File(std::string path, int);                    
+  File(std::string file, char stat_type);         //uses stat //for search mode
 };
 
 typedef std::shared_ptr<File> file_Sptr;

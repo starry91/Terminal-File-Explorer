@@ -4,6 +4,8 @@
 #include <string>
 #include <iostream>
 
+//Error class to handle errors
+
 class Error
 {
     std::string msg;

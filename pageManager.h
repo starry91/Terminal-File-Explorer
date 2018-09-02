@@ -6,6 +6,9 @@
 #include <memory>
 #include <string>
 
+//Page manager class to store page(Each view) related data
+
+
 class PageManager
 {
   public:

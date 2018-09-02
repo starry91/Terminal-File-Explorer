@@ -8,6 +8,8 @@
 #include "page.h"
 #include <memory>
 
+//Terminal class to handle the drawing part of the application to the console
+
 enum class Mode
 {
 	NORMAL = 0,

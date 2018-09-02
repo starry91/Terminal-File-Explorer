@@ -4,6 +4,9 @@
 
 #include <string>
 
+//Path class to handle path translation between system and application root and other path queries
+
+
 class Path
 {
 private:
@@ -18,6 +21,6 @@ public:
   std::string getAppAbsPath(std::string dir);
   std::string getParentDir(std::string dir);
   std::string getCurrDir(std::string dir);
-}; // namespace Path
+};
 
 #endif

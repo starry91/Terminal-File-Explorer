@@ -1,6 +1,5 @@
 #include "CommandHandler.h"
 #include <sys/stat.h>
-#include <syslog.h>
 #include <fstream>
 #include "file.h"
 #include "page.h"
@@ -9,17 +8,14 @@
 #include <fstream>
 #include "error.h"
 
-void setFilePerms(std::string file, mode_t perms)
+void setFilePerms(std::string file, mode_t perms)               //function to set permission to a file
 {
     chmod(file.c_str(), perms);
 }
 
-void CommandHandler::copyFile(std::string file, std::string dir)
+void CommandHandler::copyFile(std::string file, std::string dir)            //copy file
 {
     std::string dest_file = dir + "/" + File(file).getFileName();
-    syslog(0, "FileName: %s", File(file).getFileName().c_str());
-    syslog(0, "Source File: %s", file.c_str());
-    syslog(0, "Dest File: %s", dest_file.c_str());
     if (file == dest_file)
     {
         throw Error("cannot copy " + File(file).getFileName() + " to itself");
@@ -44,7 +40,7 @@ void CommandHandler::copyFile(std::string file, std::string dir)
     output.close();
 };
 
-void CommandHandler::copyFiles(const std::vector<std::string> &files)
+void CommandHandler::copyFiles(const std::vector<std::string> &files)           //copy mutiple files
 {
     std::string dest = files[files.size() - 1];
     for (int i = 1; i < files.size() - 1; i++)
@@ -52,18 +48,16 @@ void CommandHandler::copyFiles(const std::vector<std::string> &files)
         File file = File(files[i]);
         if (file.getFileType() == 'd')
         {
-            syslog(0, "In copy file/ copy dir: %s", files[i].c_str());
             copyDir(files[i], dest);
         }
         else if (file.getFileName() != "." && file.getFileName() != "..")
         {
-            syslog(0, "In copy file/ copy file: %s", files[i].c_str());
             copyFile(files[i], dest);
         }
     }
 };
 
-void CommandHandler::copyDir(std::string source_dir, std::string dest_dir)
+void CommandHandler::copyDir(std::string source_dir, std::string dest_dir)              //copy directory
 {
     auto page = std::make_shared<Page>(Page(source_dir));
     File folder = File(source_dir);
@@ -82,14 +76,9 @@ void CommandHandler::copyDir(std::string source_dir, std::string dest_dir)
     for (auto it = page->files.begin(); it != page->files.end(); it++)
     {
         std::string name = (*it)->getFileName();
-        syslog(0, "FileType Dir: %s", (source_dir + "/" + name).c_str());
         if ((*it)->getFileType() == 'd' && name != "." && name != "..")
         {
-            syslog(0, "Copy Dir: %s", (source_dir + "/" + name).c_str());
-            //mkdir((dest_dir + "/" + name).c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-            syslog(0, "Created Dir: %s", (source_dir + "/" + name).c_str());
             copyDir(source_dir + "/" + name, dest_dir);
-            syslog(0, "Directory: %s copied", (source_dir + "/" + name).c_str());
         }
         else if (name != "." && name != "..")
         {
@@ -98,7 +87,7 @@ void CommandHandler::copyDir(std::string source_dir, std::string dest_dir)
     }
 }
 
-void CommandHandler::delFiles(const std::vector<std::string> &files)
+void CommandHandler::delFiles(const std::vector<std::string> &files)                //delete multiple files (used while moving directories)
 {
     std::string dest = files[files.size() - 1];
     for (int i = 1; i < files.size() - 1; i++)
@@ -106,18 +95,16 @@ void CommandHandler::delFiles(const std::vector<std::string> &files)
         File file = File(files[i]);
         if (file.getFileType() == 'd')
         {
-            //syslog(0, "In copy file/ copy dir: %s", files[i].c_str());
             delDir(files[i]);
         }
         else if (file.getFileName() != "." && file.getFileName() != "..")
         {
-            //syslog(0, "In copy file/ copy file: %s", files[i].c_str());
             delFile(files[i]);
         }
     }
 }
 
-void CommandHandler::delFile(std::string file)
+void CommandHandler::delFile(std::string file)                          //delete single file
 {
     if (unlink(file.c_str()) < 0)
     {
@@ -125,7 +112,7 @@ void CommandHandler::delFile(std::string file)
     }
 }
 
-void CommandHandler::delDir(std::string source_dir)
+void CommandHandler::delDir(std::string source_dir)                 //delete directory
 {
     try
     {
@@ -154,17 +141,15 @@ void CommandHandler::delDir(std::string source_dir)
     }
 }
 
-void CommandHandler::rename(std::string old_name, std::string new_name)
+void CommandHandler::rename(std::string old_name, std::string new_name)             //rename file
 {
-    syslog(0, "Rename old %s", old_name.c_str());
-    syslog(0, "Rename new %s", new_name.c_str());
     if (std::rename(old_name.c_str(), new_name.c_str()) < 0)
     {
         throw Error("Source file does not exist");
     }
 }
 
-void CommandHandler::createFile(std::string name, std::string dest_dir)
+void CommandHandler::createFile(std::string name, std::string dest_dir)             //create file
 {
     struct stat buffer;
     if (stat((dest_dir + "/" + name).c_str(), &buffer) == 0)
@@ -178,7 +163,7 @@ void CommandHandler::createFile(std::string name, std::string dest_dir)
     }
 }
 
-void CommandHandler::createDir(std::string name, std::string dest_dir)
+void CommandHandler::createDir(std::string name, std::string dest_dir)              //create folder
 {
     try
     {
@@ -193,7 +178,7 @@ void CommandHandler::createDir(std::string name, std::string dest_dir)
     }
 }
 
-page_Sptr CommandHandler::goToDir(std::string dir)
+page_Sptr CommandHandler::goToDir(std::string dir)                  //goto command 
 {
     page_Sptr page;
     try
@@ -207,9 +192,8 @@ page_Sptr CommandHandler::goToDir(std::string dir)
     return page;
 }
 
-void CommandHandler::search(std::string name, std::string dir, std::vector<std::string> &output)
+void CommandHandler::search(std::string name, std::string dir, std::vector<std::string> &output)            //search command
 {
-    //syslog(0, "In search search path: %s", dir.c_str());
     page_Sptr page;
     try
     {
@@ -222,7 +206,6 @@ void CommandHandler::search(std::string name, std::string dir, std::vector<std::
     for (auto it = page->files.begin(); it != page->files.end(); it++)
     {
         std::string abs_path = dir + "/" + (*it)->getFileName();
-        //syslog(0, "In search search file path %s", abs_path.c_str());
         if ((*it)->getFileName() == name)
         {
             output.push_back(abs_path);
@@ -234,9 +217,8 @@ void CommandHandler::search(std::string name, std::string dir, std::vector<std::
     }
 }
 
-void CommandHandler::snapshot(std::string dir, std::string file)
+void CommandHandler::snapshot(std::string dir, std::string file)            //dumping the snapshot
 {
-    //syslog(0, "Snapshot: dir %s  file %s", dir.c_str(), file.c_str());
     page_Sptr page;
     try
     {
@@ -258,7 +240,6 @@ void CommandHandler::snapshot(std::string dir, std::string file)
         if ((*it)->getFileName() != "." && (*it)->getFileName() != ".." && (*it)->getFileName()[0] != '.')
         {
             outfile << (*it)->getFileName() << " ";
-            //syslog(0, "In search search file path %s", abs_path.c_str());
             if ((*it)->getFileType() == 'd')
             {
                 std::string abs_path = dir + "/" + (*it)->getFileName();

@@ -8,16 +8,13 @@
 #include "Terminal.h"
 #include "page.h"
 #include "path.h"
-//debug
-#include <thread> // std::this_thread::sleep_for
-#include <chrono>
-#include <syslog.h>
+
 //Draw the current state
 void Terminal::DrawView(page_Sptr page)
 {
     std::cout << "\e[2J" << std::flush;
     struct winsize ws;
-    ioctl(STDIN_FILENO, TIOCGWINSZ, &ws);
+    ioctl(STDIN_FILENO, TIOCGWINSZ, &ws);       //getting terminal dimentions
     int rows = ws.ws_row;
     int col = ws.ws_col;
 
@@ -26,7 +23,7 @@ void Terminal::DrawView(page_Sptr page)
     int offset = (rows - 3 > (page->files.size() - begin)) ? page->files.size() - begin : rows - 3;
 
     std::cout << "\033[1;1H"; //Move cursor to start
-    if (this->search_flag == 0)
+    if (this->search_flag == 0)     //when not in search mode
     {
         auto &path = Path::getInstance();
         std::cout << "Current Directory: " << path.getAppAbsPath(page->cwd + "/");
@@ -39,30 +36,24 @@ void Terminal::DrawView(page_Sptr page)
             std::cout << page->files[i]->getGroupName() << " ";
             std::cout << std::right << std::setw(6) << page->files[i]->getSize() << " ";
             std::cout << page->files[i]->getLastModified();
-            if (highlight_index == i)
+            if (highlight_index == i)       //highlighting in the selected index in the list
             {
                 std::cout << "\033[30;46m " << page->files[i]->getFileName() << " "
                           << "\033[0m ";
-                //std::cout << state.start_index << " " << state.highlight_index << " " << state.files.size();
             }
             else
             {
-                if (page->files[i]->getFileType() == 'd')
+                if (page->files[i]->getFileType() == 'd')       //coloring the directories
                     std::cout << "\033[35;10m " << page->files[i]->getFileName() << " \033[0m";
                 else
                     std::cout << " " << page->files[i]->getFileName() << " ";
             }
             std::cout << std::flush;
             cursor_row += 1;
-            //std::this_thread::sleep_for(std::chrono::seconds(1));
         }
-        syslog(0, "Mode: %d Rows: %d", (int)mode, rows);
-        // if (this->mode == Mode::COMMAND)
-        //     std::cout << "\033[" << rows << ";0H"
-        //               << ":" << std::flush;
     }
     else
-    {
+    {                                   //when in search mode
         int cursor_row = 2;
         for (int i = begin; i < begin + offset; i++)
         {
@@ -71,7 +62,6 @@ void Terminal::DrawView(page_Sptr page)
             {
                 std::cout << "\033[30;46m " << Path::getInstance().getAppAbsPath(page->files[i]->getFileName()) << " "
                           << "\033[0m ";
-                //std::cout << state.start_index << " " << state.highlight_index << " " << state.files.size();
             }
             else
             {
@@ -79,12 +69,11 @@ void Terminal::DrawView(page_Sptr page)
             }
             std::cout << std::flush;
             cursor_row += 1;
-            //std::this_thread::sleep_for(std::chrono::seconds(1));
         }
     }
 }
 
-void Terminal::DrawCommand(std::string cmd)
+void Terminal::DrawCommand(std::string cmd)         //drawing the commands to the terminal
 {
     struct winsize ws;
     ioctl(STDIN_FILENO, TIOCGWINSZ, &ws);
@@ -94,7 +83,7 @@ void Terminal::DrawCommand(std::string cmd)
     std::cout << ":" << cmd << std::flush;
 }
 
-void Terminal::DrawError(std::string err)
+void Terminal::DrawError(std::string err)         //drawing the errors to the terminal
 {
     struct winsize ws;
     ioctl(STDIN_FILENO, TIOCGWINSZ, &ws);
@@ -104,7 +93,7 @@ void Terminal::DrawError(std::string err)
     std::cout << "Error: " << err << std::flush;
 }
 
-void Terminal::eraseStatusBar()
+void Terminal::eraseStatusBar()                 //erasing the command bar
 {
     struct winsize ws;
     ioctl(STDIN_FILENO, TIOCGWINSZ, &ws);
@@ -114,7 +103,7 @@ void Terminal::eraseStatusBar()
               << "\033[K" << std::flush;
 }
 
-void Terminal::eraseErrorBar()
+void Terminal::eraseErrorBar()                  //erasing the error bar
 {
     struct winsize ws;
     ioctl(STDIN_FILENO, TIOCGWINSZ, &ws);
@@ -125,8 +114,8 @@ void Terminal::eraseErrorBar()
 }
 
 // set non-canon parameters
-int Terminal::switchToNormalMode()
-{
+int Terminal::switchToNormalMode()          //switching to normal mode
+{  
     std::cout << "\033[?1049h";         //New Screen
     std::cout << "\033[0;0H";           //Move cursor to start
     if (tcgetattr(0, &orig_term_state)) //get terminal state
@@ -149,7 +138,7 @@ int Terminal::switchToNormalMode()
     return 0;
 }
 
-int Terminal::switchToCommandMode()
+int Terminal::switchToCommandMode()             //switch to command mode(linux settings by default)
 {
     curr_term_state = orig_term_state;
 

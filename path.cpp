@@ -1,29 +1,26 @@
 #include "path.h"
-#include <syslog.h>
 
 Path::Path()
 {
-    syslog(0, "Calling constructor");
 };
 
-void Path::setHomePath(std::string home_path)
+void Path::setHomePath(std::string home_path)       //setting application HOME/ROOT path
 {
     this->HOME_APPLICATION = home_path;
 };
 
-std::string Path::getHomePath()
+std::string Path::getHomePath()             //getting application HOME path
 {
     return this->HOME_APPLICATION;
 };
 
-Path &Path::getInstance()
+Path &Path::getInstance()           //getting singleton instance of the path object
 {
     static Path path;
-    syslog(0, "Address: %x", &path);
     return path;
 }
 
-std::string Path::getParentDir(std::string dir)
+std::string Path::getParentDir(std::string dir)         //getting parent path of the given dir
 {
     int count = 0, start = dir.length() - 1;
 
@@ -38,15 +35,13 @@ std::string Path::getParentDir(std::string dir)
     return dir.substr(0, start + 1);
 };
 
-std::string Path::getCurrDir(std::string dir)
+std::string Path::getCurrDir(std::string dir)           //getting current dir
 {
     return dir;
 };
 
-std::string Path::getAppAbsPath(std::string dir)
+std::string Path::getAppAbsPath(std::string dir)        //getting application ablsolute path
 {
-
-    syslog(0, "Path: %s Home: %s", dir.c_str(), this->HOME_APPLICATION.c_str());
     if (dir.length() > this->HOME_APPLICATION.length() && dir.substr(0, this->HOME_APPLICATION.length()) == this->HOME_APPLICATION)
         return dir.substr(this->HOME_APPLICATION.length(), dir.length() - this->HOME_APPLICATION.length());
     if (dir.length() == this->HOME_APPLICATION.length() && dir.substr(0, this->HOME_APPLICATION.length()) == this->HOME_APPLICATION)
@@ -57,7 +52,7 @@ std::string Path::getAppAbsPath(std::string dir)
         return std::string("");
 }
 
-std::string Path::getSystemAbsPath(std::string dir)
+std::string Path::getSystemAbsPath(std::string dir)         //getting system absolute path
 {
     if (dir.length() >= this->HOME_APPLICATION.length() && dir.substr(0, this->HOME_APPLICATION.length()) == this->HOME_APPLICATION)
         return dir;

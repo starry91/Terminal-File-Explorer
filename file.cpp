@@ -8,12 +8,12 @@
 #include <vector>
 #include "error.h"
 
-File::File(std::string path, int search_mode)
+File::File(std::string path, int search_mode)           //constructor for search mode
 {
     this->dir_entry = path;
 }
 
-File::File(std::string file)
+File::File(std::string file)                    //default constructor 
 {
     std::vector<std::string> tokens;
     int prev = 0;
@@ -32,7 +32,7 @@ File::File(std::string file)
     }
 }
 
-File::File(std::string file, char stat_type)
+File::File(std::string file, char stat_type)                    //to get stat in search mode
 {
     std::vector<std::string> tokens;
     int prev = 0;
@@ -54,7 +54,7 @@ File::File(std::string file, char stat_type)
 
 
 
-File::File(std::string path, std::string dir_entry)
+File::File(std::string path, std::string dir_entry)                 //default constructor when creating first page in Page manager constructor
 {
     this->dir_entry = dir_entry;
     if (lstat((path + "/" + dir_entry).c_str(), &fileStat))
@@ -63,7 +63,7 @@ File::File(std::string path, std::string dir_entry)
     }
 }
 
-std::string File::getGroupName()
+std::string File::getGroupName()                                    //getting file attributes
 {
     return std::string(getpwuid(fileStat.st_gid)->pw_name);
 }
