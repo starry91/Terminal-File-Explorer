@@ -114,7 +114,7 @@ std::vector<std::string> CommandParser::translateArgs(std::vector<std::string> a
         {
             processed_output.push_back(args[start]);
         }
-        else if (args[start][0] == '.')
+        else if (args[start][0] == '.' && ((args[start].length() > 1 && args[start][1] == '/') || args[start].length() == 1))
         {
             if (args[start].length() > 1)
                 processed_output.push_back(page->cwd + args[start].substr(1, args[start].length() - 1));
