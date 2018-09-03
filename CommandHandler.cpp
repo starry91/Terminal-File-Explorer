@@ -10,6 +10,7 @@
 #include <unistd.h>
 #include <fstream>
 #include "error.h"
+#include <syslog.h>
 
 void setFilePerms(std::string file, mode_t perms)               //function to set permission to a file
 {
@@ -62,6 +63,15 @@ void CommandHandler::copyFiles(const std::vector<std::string> &files)           
 
 void CommandHandler::copyDir(std::string source_dir, std::string dest_dir)              //copy directory
 {
+    std::string temp = dest_dir;
+    if(dest_dir.length() > source_dir.length()) {
+        temp = dest_dir.substr(0, source_dir.length());
+    }
+    if(temp == source_dir) {
+        throw Error("Cannot copy directory into itself");
+    }
+    //syslog(0,"Source Dir: [%s]", source_dir.c_str());
+    //syslog(0,"dest Dir: [%s]", dest_dir.c_str());
     auto page = std::make_shared<Page>(Page(source_dir));
     File folder = File(source_dir);
     dest_dir = dest_dir + "/" + folder.getFileName();
