@@ -1,3 +1,6 @@
+//Name: Praveen Balireddy
+//Roll: 2018201052
+
 #include <iostream>
 #include <chrono>
 #include <thread>
@@ -9,7 +12,7 @@
 #include "CommandParser.h"
 #include "path.h"
 #include "error.h"
-
+#include <syslog.h>
 //Actions for normal mode
 enum class Action
 {
@@ -94,7 +97,8 @@ int main()
 						term.DrawView(page);
 					}
 				}
-				catch(Error e) {
+				catch (Error e)
+				{
 					term.DrawError(e.getErrorMsg());
 				}
 			}

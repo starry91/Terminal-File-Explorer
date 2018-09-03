@@ -1,8 +1,13 @@
+//Name: Praveen Balireddy
+//Roll: 2018201052
+
 #include "CommandParser.h"
 #include "path.h"
 #include <iostream>
 #include <cstring>
-enum PARSE_MODE                 //Parse mode(State machin states) for parsing the user command
+#include <syslog.h>
+
+enum PARSE_MODE //Parse mode(State machin states) for parsing the user command
 {
     SPACE = 0,
     SINGLE_QUOTE = 1,
@@ -10,15 +15,16 @@ enum PARSE_MODE                 //Parse mode(State machin states) for parsing th
     ESCAPE = 3,
 };
 
-std::vector<std::string> CommandParser::getArgs(std::string command)            //parsing the user command text
+std::vector<std::string> CommandParser::getArgs(std::string command) //parsing the user command text
 {
     std::vector<std::string> res;
     int i = 0;
     bool found = false;
     auto path_obj = Path::getInstance();
     int mode = PARSE_MODE::SPACE;
-    int prev_mode, start_index, end_index;
+    int prev_mode;
     //start_index = 0;
+    int space_count = 0;
     char buff[1024];
     int buff_index = 0;
     std::memset(buff, 0, 1024);
@@ -28,6 +34,7 @@ std::vector<std::string> CommandParser::getArgs(std::string command)            
         {
             buff[buff_index] = 0;
             res.push_back(std::string(buff));
+            space_count = 0;
         }
         if (mode == PARSE_MODE::SPACE)
         {
@@ -38,26 +45,36 @@ std::vector<std::string> CommandParser::getArgs(std::string command)            
             }
             else if (command[start] == ' ')
             {
-                buff[buff_index] = 0;
-                res.push_back(std::string(buff));
-                start_index = start + 1;
-                buff_index = 0;
-                std::memset(buff, 0, 1024);
+                if (space_count > 0 || start == 0)
+                {
+                    space_count++;
+                }
+                else
+                {
+                    buff[buff_index] = 0;
+                    res.push_back(std::string(buff));
+                    buff_index = 0;
+                    std::memset(buff, 0, 1024);
+                    space_count++;
+                }
             }
             else if (command[start] == '\'')
             {
                 mode = PARSE_MODE::SINGLE_QUOTE;
                 prev_mode = PARSE_MODE::SPACE;
+                space_count = 0;
             }
             else if (command[start] == '"')
             {
                 mode = PARSE_MODE::DOUBLE_QUOTE;
                 prev_mode = PARSE_MODE::SPACE;
+                space_count = 0;
             }
             else
             {
                 buff[buff_index] = command[start];
                 buff_index++;
+                space_count = 0;
             }
         }
         else if (mode == PARSE_MODE::ESCAPE)
@@ -72,7 +89,6 @@ std::vector<std::string> CommandParser::getArgs(std::string command)            
             {
                 buff[buff_index] = 0;
                 res.push_back(std::string(buff));
-                start_index = start + 1;
                 buff_index = 0;
                 std::memset(buff, 0, 1024);
                 mode = prev_mode;
@@ -89,7 +105,6 @@ std::vector<std::string> CommandParser::getArgs(std::string command)            
             {
                 buff[buff_index] = 0;
                 res.push_back(std::string(buff));
-                start_index = start + 1;
                 buff_index = 0;
                 std::memset(buff, 0, 1024);
                 mode = prev_mode;
@@ -104,7 +119,7 @@ std::vector<std::string> CommandParser::getArgs(std::string command)            
     return res;
 };
 
-std::vector<std::string> CommandParser::translateArgs(std::vector<std::string> args, page_Sptr page)            //translating the args to system absolute paths
+std::vector<std::string> CommandParser::translateArgs(std::vector<std::string> args, page_Sptr page) //translating the args to system absolute paths
 {
     std::vector<std::string> processed_output;
     auto path_obj = Path::getInstance();

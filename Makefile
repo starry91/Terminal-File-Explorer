@@ -1,3 +1,6 @@
+#Name: Praveen Balireddy
+#Roll: 2018201052
+
 PROJECT_ROOT = $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 
 OBJS =  termzilla.o Terminal.o pageManager.o page.o file.o path.o CommandParser.o CommandHandler.o error.o
