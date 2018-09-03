@@ -8,12 +8,12 @@
 #include <vector>
 #include "error.h"
 
-File::File(std::string path, int search_mode)           //constructor for search mode
+File::File(std::string path, int search_mode) //constructor for search mode
 {
     this->dir_entry = path;
 }
 
-File::File(std::string file)                    //default constructor 
+File::File(std::string file) //default constructor
 {
     std::vector<std::string> tokens;
     int prev = 0;
@@ -30,9 +30,13 @@ File::File(std::string file)                    //default constructor
     {
         throw Error("Invalid Args: Cannot find file");
     }
+    if (stat(file.c_str(), &effFileStat))
+    {
+        effFileStat = fileStat;
+    }
 }
 
-File::File(std::string file, char stat_type)                    //to get stat in search mode
+File::File(std::string file, char stat_type) //to get stat in search mode
 {
     std::vector<std::string> tokens;
     int prev = 0;
@@ -45,25 +49,36 @@ File::File(std::string file, char stat_type)                    //to get stat in
         }
     }
     this->dir_entry = tokens[tokens.size() - 1];
-    if (stat(file.c_str(), &fileStat))
+    if (lstat(file.c_str(), &fileStat))
     {
         throw Error("Invalid Args: Cannot find file");
     }
+    if (stat(file.c_str(), &effFileStat))
+    {
+        effFileStat = fileStat;
+    }
 }
 
+char File::getEffFileType()
+{
+    mode_t perm = this->effFileStat.st_mode;
+    return S_ISDIR(perm) ? 'd' : S_ISLNK(perm) ? 'l' : 'f';
+}
 
-
-
-File::File(std::string path, std::string dir_entry)                 //default constructor when creating first page in Page manager constructor
+File::File(std::string path, std::string dir_entry) //default constructor when creating first page in Page manager constructor
 {
     this->dir_entry = dir_entry;
     if (lstat((path + "/" + dir_entry).c_str(), &fileStat))
     {
-        throw Error("Invalid Args: Cannot find file");
+        throw Error("lstat Invalid Args: Cannot find file");
+    }
+    if (stat((path + "/" + dir_entry).c_str(), &effFileStat))
+    {
+        effFileStat = fileStat;
     }
 }
 
-std::string File::getGroupName()                                    //getting file attributes
+std::string File::getGroupName() //getting file attributes
 {
     return std::string(getpwuid(fileStat.st_gid)->pw_name);
 }

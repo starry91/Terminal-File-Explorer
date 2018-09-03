@@ -13,6 +13,7 @@
 class File
 {
   struct stat fileStat;
+  struct stat effFileStat;
   std::string dir_entry;
 
 public:
@@ -28,6 +29,7 @@ public:
   File(std::string path);
   File(std::string path, int);                    
   File(std::string file, char stat_type);         //uses stat //for search mode
+  char getEffFileType();
 };
 
 typedef std::shared_ptr<File> file_Sptr;
