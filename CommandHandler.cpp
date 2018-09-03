@@ -183,7 +183,7 @@ page_Sptr CommandHandler::goToDir(std::string dir)                  //goto comma
     page_Sptr page;
     try
     {
-        std::make_shared<Page>(Page(dir));
+        page = std::make_shared<Page>(Page(dir));
     }
     catch (Error e)
     {
