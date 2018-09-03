@@ -32,9 +32,9 @@ void Terminal::DrawView(page_Sptr page)
         {
             std::cout << "\033[" << cursor_row << ";0H";
             std::cout << page->files[i]->getPermission() << " ";
-            std::cout << page->files[i]->getUserName() << " ";
-            std::cout << page->files[i]->getGroupName() << " ";
-            std::cout << std::right << std::setw(6) << page->files[i]->getSize() << " ";
+            std::cout << std::left << std::setw(12) << page->files[i]->getUserName() << " ";
+            std::cout << std::left << std::setw(12) << page->files[i]->getGroupName() << " ";
+            std::cout << std::left << std::setw(7) << page->files[i]->getSize() << " ";
             std::cout << page->files[i]->getLastModified();
             if (highlight_index == i)       //highlighting in the selected index in the list
             {

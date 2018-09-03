@@ -7,6 +7,7 @@
 #include <pwd.h>
 #include <vector>
 #include "error.h"
+#include <grp.h>
 
 File::File(std::string path, int search_mode) //constructor for search mode
 {
@@ -80,13 +81,15 @@ File::File(std::string path, std::string dir_entry) //default constructor when c
 
 std::string File::getGroupName() //getting file attributes
 {
-    return std::string(getpwuid(fileStat.st_gid)->pw_name);
+    if (getgrgid(fileStat.st_gid) == NULL)
+        return std::to_string(fileStat.st_gid);
+    return std::string(getgrgid(fileStat.st_gid)->gr_name);
 }
 std::string File::getPermission()
 {
     char *mode = (char *)malloc(sizeof(char) * 10 + 1);
     mode_t perm = this->fileStat.st_mode;
-    mode[0] = (perm & S_IFDIR) ? 'd' : ((perm & S_IFMT) == S_IFLNK ? 'l' : '-');
+    mode[0] = ((perm & S_IFMT) == S_IFDIR) ? 'd' : ((perm & S_IFMT) == S_IFLNK ? 'l' : ((perm & S_IFMT) == S_IFCHR ? 'c' : ((perm & S_IFMT) == S_IFBLK ? 'b' : ((perm & S_IFMT) == S_IFIFO ? 'p' : ((perm & S_IFMT) == S_IFSOCK ? 'p' : ((perm & S_IFMT) == S_IFREG ? '-' : 'u'))))));
     mode[1] = (perm & S_IRUSR) ? 'r' : '-';
     mode[2] = (perm & S_IWUSR) ? 'w' : '-';
     mode[3] = (perm & S_IXUSR) ? 'x' : '-';
@@ -118,6 +121,8 @@ std::string File::getFileName()
 
 std::string File::getUserName()
 {
+    if (getpwuid(fileStat.st_uid) == NULL)
+        return std::to_string(fileStat.st_uid);
     return std::string(getpwuid(this->fileStat.st_uid)->pw_name);
 }
 

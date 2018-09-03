@@ -27,18 +27,18 @@ enum class Action
 
 int main()
 {
-	PageManager pageMgr;  //page manager to manage all the views
-	Path &path_obj = Path::getInstance();	//singleton path class to translate paths to system absolute paths and vice versa
-	Terminal term;	//terminal class - to draw different views 
+	PageManager pageMgr;				  //page manager to manage all the views
+	Path &path_obj = Path::getInstance(); //singleton path class to translate paths to system absolute paths and vice versa
+	Terminal term;						  //terminal class - to draw different views
 	char input[10];
-	std::memset(input, 0, 10);	//removing garbage values
+	std::memset(input, 0, 10); //removing garbage values
 	term.switchToNormalMode(); //set non-canonical params
 	term.disableCursor();
 	int search_mode = 0;
-	page_Sptr page = pageMgr.getCurrPage();		//page_Sptr - Shared pointer of page class
+	page_Sptr page = pageMgr.getCurrPage(); //page_Sptr - Shared pointer of page class
 	term.DrawView(page);
-	CommandHandler cmdHandler;		//command handler class to handle the different commands in command mode
-	CommandParser cmdParser;		// command parser class to parse the commands by the user and convert as needed
+	CommandHandler cmdHandler; //command handler class to handle the different commands in command mode
+	CommandParser cmdParser;   // command parser class to parse the commands by the user and convert as needed
 
 	fflush(stdout);
 	int read_byte_count = 0;
@@ -74,25 +74,31 @@ int main()
 				}
 				term.DrawView(page);
 			}
-			else if (read_byte_count == 1 && (int)input[0] == (int)Action::KEY_ENTER) 		//When opening file or directory
+			else if (read_byte_count == 1 && (int)input[0] == (int)Action::KEY_ENTER) //When opening file or directory
 			{
-				page_Sptr new_page = page->enterDir();
-				if (new_page != NULL) //if opening a folder
+				try
 				{
-					int curr_index = pageMgr.getCurrStateIndex();
-					while (pageMgr.pageHistory.size() > curr_index + 1)
-						pageMgr.pop();
-					pageMgr.push(new_page);
-					page = pageMgr.getCurrPage();
-					if (search_mode == 1)
+					page_Sptr new_page = page->enterDir();
+					if (new_page != NULL) //if opening a folder
 					{
-						search_mode = 0;
-						term.search_flag = 0;
+						int curr_index = pageMgr.getCurrStateIndex();
+						while (pageMgr.pageHistory.size() > curr_index + 1)
+							pageMgr.pop();
+						pageMgr.push(new_page);
+						page = pageMgr.getCurrPage();
+						if (search_mode == 1)
+						{
+							search_mode = 0;
+							term.search_flag = 0;
+						}
+						term.DrawView(page);
 					}
-					term.DrawView(page);
+				}
+				catch(Error e) {
+					term.DrawError(e.getErrorMsg());
 				}
 			}
-			else if (read_byte_count == 1 && (int)input[0] == (int)Action::KEY_BACKSPACE)	//to handle backspace when in normal mode
+			else if (read_byte_count == 1 && (int)input[0] == (int)Action::KEY_BACKSPACE) //to handle backspace when in normal mode
 			{
 				if (search_mode == 1)
 				{
@@ -115,7 +121,7 @@ int main()
 					}
 				}
 			}
-			else if (read_byte_count == 1 && (int)input[0] == (int)Action::KEY_h)		//jumping to home directory
+			else if (read_byte_count == 1 && (int)input[0] == (int)Action::KEY_h) //jumping to home directory
 			{
 				term.search_flag = 0;
 				search_mode = 0;
@@ -127,7 +133,7 @@ int main()
 				page = pageMgr.getCurrPage();
 				term.DrawView(page);
 			}
-			else if (read_byte_count == 1 && search_mode == 0 && (int)input[0] == (int)Action::KEY_COLON)	//switching to command mode
+			else if (read_byte_count == 1 && search_mode == 0 && (int)input[0] == (int)Action::KEY_COLON) //switching to command mode
 			{
 				term.enableCursor();
 				term.DrawCommand("");
@@ -136,13 +142,13 @@ int main()
 				char input[10];
 				std::memset(input, 0, 10);
 				int start = 0;
-				while (true)		//reading while in command mode
+				while (true) //reading while in command mode
 				{
 					try
 					{
 						std::memset(input, 0, 10);
 						int byte_count = read(0, input, 5);
-						if (byte_count == 1 && input[0] != '\n' && ((int)input[0] != (int)Action::KEY_ESC))		//while user typing input, including backspace
+						if (byte_count == 1 && input[0] != '\n' && ((int)input[0] != (int)Action::KEY_ESC)) //while user typing input, including backspace
 						{
 							if ((int)input[0] != (int)Action::KEY_BACKSPACE)
 							{
@@ -156,7 +162,7 @@ int main()
 							}
 							term.DrawCommand(std::string(buffer));
 						}
-						else if (byte_count == 1 && input[0] == '\n')		//when ENTER is pressed in command mode
+						else if (byte_count == 1 && input[0] == '\n') //when ENTER is pressed in command mode
 						{
 							std::vector<std::string> command_args = cmdParser.getArgs(std::string(buffer));
 							if (command_args.size() <= 1)
@@ -164,14 +170,14 @@ int main()
 								throw Error("No Arguments");
 							}
 							std::vector<std::string> translated_args = cmdParser.translateArgs(command_args, page);
-							if (translated_args[0] == "copy")		//copy command
+							if (translated_args[0] == "copy") //copy command
 							{
 								cmdHandler.copyFiles(translated_args);
 								pageMgr.updateCurrPage();
 								page = pageMgr.getCurrPage();
 								term.DrawView(page);
 							}
-							else if (translated_args[0] == "move")		//move command
+							else if (translated_args[0] == "move") //move command
 							{
 								cmdHandler.copyFiles(translated_args);
 								cmdHandler.delFiles(translated_args);
@@ -179,7 +185,7 @@ int main()
 								page = pageMgr.getCurrPage();
 								term.DrawView(page);
 							}
-							else if (translated_args[0] == "rename")	//rename command
+							else if (translated_args[0] == "rename") //rename command
 							{
 								if (command_args.size() != 3)
 								{
@@ -190,7 +196,7 @@ int main()
 								page = pageMgr.getCurrPage();
 								term.DrawView(page);
 							}
-							else if (translated_args[0] == "create_file")		//create_file command
+							else if (translated_args[0] == "create_file") //create_file command
 							{
 								if (command_args.size() != 3)
 								{
@@ -201,7 +207,7 @@ int main()
 								page = pageMgr.getCurrPage();
 								term.DrawView(page);
 							}
-							else if (translated_args[0] == "create_dir")		//create_dir command 
+							else if (translated_args[0] == "create_dir") //create_dir command
 							{
 								if (command_args.size() != 3)
 								{
@@ -212,7 +218,7 @@ int main()
 								page = pageMgr.getCurrPage();
 								term.DrawView(page);
 							}
-							else if (translated_args[0] == "delete_file")		//delete_file command
+							else if (translated_args[0] == "delete_file") //delete_file command
 							{
 								if (command_args.size() != 2)
 								{
@@ -223,7 +229,7 @@ int main()
 								page = pageMgr.getCurrPage();
 								term.DrawView(page);
 							}
-							else if (translated_args[0] == "delete_dir")	//delete_dir command
+							else if (translated_args[0] == "delete_dir") //delete_dir command
 							{
 								if (command_args.size() != 2)
 								{
@@ -234,7 +240,7 @@ int main()
 								page = pageMgr.getCurrPage();
 								term.DrawView(page);
 							}
-							else if (translated_args[0] == "goto")			//goto command
+							else if (translated_args[0] == "goto") //goto command
 							{
 								if (command_args.size() != 2)
 								{
@@ -248,7 +254,7 @@ int main()
 								page = pageMgr.getCurrPage();
 								term.DrawView(page);
 							}
-							else if (translated_args[0] == "search")		//search command
+							else if (translated_args[0] == "search") //search command
 							{
 								if (command_args.size() != 2)
 								{
@@ -266,7 +272,7 @@ int main()
 								term.DrawView(page);
 								break;
 							}
-							else if (translated_args[0] == "snapshot")		//snapshot command
+							else if (translated_args[0] == "snapshot") //snapshot command
 							{
 								if (command_args.size() != 3)
 								{
@@ -279,17 +285,17 @@ int main()
 							}
 							else
 							{
-								throw Error("Invalid Command");		//for incorrect commands
+								throw Error("Invalid Command"); //for incorrect commands
 							}
 							term.eraseStatusBar();
 							term.DrawCommand("");
 							std::memset(buffer, 0, 1024);
 							start = 0;
 						}
-						else if (byte_count == 1 && (int)input[0] == (int)Action::KEY_ESC)		//returning to normal mode
+						else if (byte_count == 1 && (int)input[0] == (int)Action::KEY_ESC) //returning to normal mode
 							break;
 					}
-					catch (Error e)		//catching errors and printing accordingly
+					catch (Error e) //catching errors and printing accordingly
 					{
 						term.DrawError(e.getErrorMsg());
 						term.eraseStatusBar();
@@ -301,11 +307,11 @@ int main()
 				term.DrawView(page);
 				term.disableCursor();
 			}
-			else if (read_byte_count == 1 && search_mode == 0 && (int)input[0] == (int)Action::KEY_q)	//quitting application in normal mode
+			else if (read_byte_count == 1 && search_mode == 0 && (int)input[0] == (int)Action::KEY_q) //quitting application in normal mode
 			{
 				term.switchToCommandMode();
 				term.enableCursor();
-				std::cout << "\e[?1049l" << std::flush;		//restoring old screen before launching the application
+				std::cout << "\e[?1049l" << std::flush; //restoring old screen before launching the application
 				return (0);
 			}
 		}

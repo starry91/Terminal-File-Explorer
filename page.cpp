@@ -9,6 +9,7 @@
 #include <sys/wait.h>
 #include "error.h"
 #include <syslog.h>
+#include <fcntl.h>
 
 Page::Page(std::string path = NULL) //constructor
 {
@@ -71,58 +72,72 @@ page_Sptr Page::enterDir() //entering dir or opening file using xdg-open
     std::string search_path = path_obj.getSystemAbsPath(file->getFileName());
     // try
     // {
-        if (this->cwd == "search") //when in search mode
+    if (this->cwd == "search") //when in search mode
+    {
+        if (File(search_path).getEffFileType() == 'd')
         {
-            if (File(search_path).getEffFileType() == 'd')
-            {
-                return std::make_shared<Page>(Page((char *)search_path.c_str()));
-            }
-            else
-            {
-                int pid = fork();
-                if (pid == 0)
-                { //child
-                    execl("/usr/bin/xdg-open", "xdg-open", search_path.c_str(), NULL);
-                }
-                else
-                {
-                    int err = waitpid(-1, NULL, WUNTRACED);
-                }
-            }
-        }
-        else if (file->getEffFileType() == 'd') //when in normal mode
-        {
-            std::string path;
-            if (file->getFileName() == "..")
-                path = path_obj.getParentDir(this->cwd);
-            else if (file->getFileName() == ".")
-                path = this->cwd;
-            else
-                path = this->cwd + "/" + file->getFileName();
-            //syslog(0, "enterDir: path: %s", path.c_str());
-            if (path.length() >= path_obj.getHomePath().length())
-            {
-                return std::make_shared<Page>(Page((char *)path.c_str()));
-            }
+            return std::make_shared<Page>(Page((char *)search_path.c_str()));
         }
         else
         {
             int pid = fork();
             if (pid == 0)
             { //child
-                std::string path = this->cwd + "/" + file->getFileName();
-                execl("/usr/bin/xdg-open", "xdg-open", path.c_str(), NULL);
+                int devNull = open("/dev/null", 0);
+                dup2(devNull, STDOUT_FILENO);
+                dup2(devNull, STDERR_FILENO);
+                execl("/usr/bin/xdg-open", "xdg-open", search_path.c_str(), NULL);
             }
             else
             {
-                int err = waitpid(-1, NULL, WUNTRACED);
+                int status;
+                int err = waitpid(-1, &status, WUNTRACED);
+                //syslog(0, "Exit status: %u", WEXITSTATUS(status));
+                if (WEXITSTATUS(status) != 0)
+                {
+                    throw Error("No application is registered as handling this file");
+                }
             }
         }
-        return NULL;
-    // }
-    // catch(Error e) {
-    //     std::cout << "No default application to open" << std::flush;
-    // }
+    }
+    else if (file->getEffFileType() == 'd') //when in normal mode
+    {
+        std::string path;
+        if (file->getFileName() == "..")
+            path = path_obj.getParentDir(this->cwd);
+        else if (file->getFileName() == ".")
+            path = this->cwd;
+        else
+            path = this->cwd + "/" + file->getFileName();
+        //syslog(0, "enterDir: path: %s", path.c_str());
+        if (path.length() >= path_obj.getHomePath().length())
+        {
+            return std::make_shared<Page>(Page((char *)path.c_str()));
+        }
+    }
+    else
+    {
+        int pid = fork();
+        if (pid == 0)
+        { //child
+            int devNull = open("/dev/null", 0);
+            dup2(devNull, STDOUT_FILENO);
+            dup2(devNull, STDERR_FILENO);
+            std::string path = this->cwd + "/" + file->getFileName();
+            execl("/usr/bin/xdg-open", "xdg-open", path.c_str(), NULL);
+        }
+        else
+        {
+            int status;
+            int err = waitpid(-1, &status, WUNTRACED);
+            //syslog(0, "Exit status: %u", WEXITSTATUS(status));
+            if (WEXITSTATUS(status) != 0)
+            {
+                throw Error("No application is registered as handling this file");
+            }
+        }
+    }
+    return NULL;
 }
 
 page_Sptr Page::gotoParent() //goto parent

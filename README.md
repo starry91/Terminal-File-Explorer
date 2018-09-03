@@ -13,7 +13,7 @@ Clone the repo and run Make in the project directory
 The application works in two modes. The application starts in normal mode, which is the default mode and used to explore the current directory and navigate around in the filesystem. 
 The root of your application will be the directory where the application was started.  
 The last but one line of the display screen is to be used as command bar (when ":" is pressed, a command bar shows up)  
-The last line of the display screen is to be used as error bar to show errors in command mode  
+The last line of the display screen is to be used as error bar to show errors.    
 
 ## Normal Mode:
 
@@ -54,10 +54,8 @@ On pressing 'q' in Normal mode, application gracefully exits and the old screen 
 On pressing 'ESC' key the application switches to Normal Mode.  
 
 #Things to note:
-1. Broken symbolic links are not shown
-3. When searched for a name, the search page shows all the files/directories matching with it. Pressing "BACKSPACE" from there takes you to the previous visited page. Pressing "ENTER" opens up the file/dir
-4. Snapshot appends to the dumpfile if it already exists
-5. Classifying only directory (d), normal file(-), and symbolic link(l)
+1. When searched for a name, the search page shows all the files/directories matching with it. Pressing "BACKSPACE" from there takes you to the previous visited page. Pressing "ENTER" opens up the file/dir
+2. Snapshot appends to the dumpfile if it already exists
 
 #Authors
 
