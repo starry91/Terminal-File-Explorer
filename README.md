@@ -1,14 +1,14 @@
-#Project Title
+# Project Title
 
 A simple file explorer which has 2 modes of exploring files:  
 1. Normal Mode: Works like a GUI application with features to scroll, select, navigate and open files  
 2. Command Mode: Can be used to explore/take actions using commands
 
-#How to install
+# How to install
 
 Clone the repo and run Make in the project directory
 
-#How it works
+# How it works
 
 The application works in two modes. The application starts in normal mode, which is the default mode and used to explore the current directory and navigate around in the filesystem. 
 The root of your application will be the directory where the application was started.  
@@ -37,7 +37,7 @@ On pressing 'q' in Normal mode, application gracefully exits and the old screen 
 
 ## Command Mode
 
-###Commands available:
+### Commands available:
 1. Copy ':copy <source_file(s)> <destination_directory>'
 2. Move ':move <source_file(s)> <destination_directory>'
 3. Rename ':rename <old_filename> <new_filename>'
@@ -53,10 +53,10 @@ On pressing 'q' in Normal mode, application gracefully exits and the old screen 
 
 On pressing 'ESC' key the application switches to Normal Mode.  
 
-#Things to note:
+# Things to note:
 1. When searched for a name, the search page shows all the files/directories matching with it. Pressing "BACKSPACE" from there takes you to the previous visited page. Pressing "ENTER" opens up the file/dir
 2. Snapshot appends to the dumpfile if it already exists
 
-#Authors
+# Authors
 
     Praveen Balireddy
